@@ -52,16 +52,17 @@ LOGGING = {
         }
     },
     'handlers': {
-        'default': {'level': 'INFO',
-                    'class': 'pupa.ext.ansistrm.ColorizingStreamHandler',
-                    'formatter': 'standard'
-                   },
+        'default': {
+            'level': 'INFO',
+            'class': 'pupa.ext.ansistrm.ColorizingStreamHandler',
+            'formatter': 'standard'
+        },
         'sentry': {
             'level': 'CRITICAL',
             'class': 'raven.handlers.logging.SentryHandler',
             'client_cls': OCDClient,
-            'dsn': '',
-            },
+            'dsn': 'https://78df3855dad0415e99c3c327ea9f8126:a04d4bfe629a421aa2703a68e71f27dd@o13877.ingest.sentry.io/4504447849201664',
+        },
     },
     'loggers': {
         '': {
