@@ -1,7 +1,7 @@
 scrapers-lametro
 =====================
 
-DataMade's source for municipal scrapers feeding [boardagendas.metro.net](https://ocd-api-documentation.readthedocs.io/en/latest/).
+DataMade's source for municipal scrapers feeding [boardagendas.metro.net](https://boardagendas.metro.net).
 
 ## Development
 
@@ -11,7 +11,7 @@ Make your changes to the scraper code here.
 
 Merge your PR to push to `main` and publish a `staging` tag of the scraper image.
 
-To publihs a `production` tag of the scraper image, sync the `master` branch with the
+To publish a `production` tag of the scraper image, sync the `master` branch with the
 `deploy` branch:
 
 ```bash
