@@ -11,11 +11,11 @@ Make your changes to the scraper code here.
 
 Merge your PR to push to `main` and publish a `staging` tag of the scraper image.
 
-To publish a `production` tag of the scraper image, sync the `master` branch with the
+To publish a `production` tag of the scraper image, sync the `main` branch with the
 `deploy` branch:
 
 ```bash
-git push origin master:deploy
+git push origin main:deploy
 ```
 
 ### Scheduling
