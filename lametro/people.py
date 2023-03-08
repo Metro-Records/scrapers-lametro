@@ -136,11 +136,25 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
             members[member] = p
 
         for body in self.bodies():
-            if body['BodyTypeId'] in (body_types['Committee'], body_types['Independent Taxpayer Oversight Committee']):
+            body_types_list = [
+                body_types['Committee'],
+                body_types['Committee (SAP)'],
+                body_types['Independent Taxpayer Oversight Committee'],
+                body_types['Primary Legislative Body'],
+                body_types['Primary Legislative Body (SAP)'],
+            ]
+
+            if body['BodyTypeId'] in body_types_list:
                 organization_name = body['BodyName'].strip()
-                o = Organization(organization_name,
-                                 classification='committee',
-                                 parent_id={'name' : 'Board of Directors'})
+
+                if body['BodyName'] in ('Primary Legislative Body', 'Primary Legislative Body (SAP)'):
+                    o = Organization(organization_name,
+                                    classification='legislature',
+                                    parent_id={'name' : 'Board of Directors'})
+                else :
+                    o = Organization(organization_name,
+                                    classification='committee',
+                                    parent_id={'name' : 'Board of Directors'})
 
                 organization_info = web_info.get(organization_name, {})
                 organization_url = organization_info.get('url', self.WEB_URL + 'https://metro.legistar.com/Departments.aspx')
