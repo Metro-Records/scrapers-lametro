@@ -1,28 +1,21 @@
+import logging
 import os
-from raven.contrib.django.client import DjangoClient
 
-class OCDClient(DjangoClient):
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
-    def send(self, **kwargs):
 
-        # Warnings do not have exceptions
-        if 'exception' not in kwargs:
-            return super().send(**kwargs)
+sentry_logging = LoggingIntegration(
+    level=logging.INFO,
+    event_level=logging.ERROR
+)
 
-        # Ignore ScrapeError from empty hourly scrapes
-        for value in kwargs['exception'].get('values', []):
-
-            if value.get('type') == 'ScrapeError':
-
-                extra = kwargs.get('extra', {})
-                arg_v = extra.get('sys.argv')
-
-                if arg_v:
-                    for arg in arg_v:
-                        if 'window' in arg:
-                            return None
-
-        return super().send(**kwargs)
+sentry_sdk.init(
+    dsn="https://78df3855dad0415e99c3c327ea9f8126:a04d4bfe629a421aa2703a68e71f27dd@o13877.ingest.sentry.io/4504447849201664",
+    integrations=[DjangoIntegration(), sentry_logging],
+    environment=os.getenv("SENTRY_ENVIRONMENT", "dev"),
+)
 
 CACHE_DIR = '/tmp/cache/_cache'
 SCRAPED_DATA_DIR = '/tmp/cache/_data'
@@ -57,16 +50,10 @@ LOGGING = {
             'class': 'pupa.ext.ansistrm.ColorizingStreamHandler',
             'formatter': 'standard'
         },
-        'sentry': {
-            'level': 'CRITICAL',
-            'class': 'raven.handlers.logging.SentryHandler',
-            'client_cls': OCDClient,
-            'dsn': 'https://78df3855dad0415e99c3c327ea9f8126:a04d4bfe629a421aa2703a68e71f27dd@o13877.ingest.sentry.io/4504447849201664',
-        },
     },
     'loggers': {
         '': {
-            'handlers': ['default', 'sentry'], 'level': 'DEBUG', 'propagate': True
+            'handlers': ['default'], 'level': 'DEBUG', 'propagate': True
         },
         'scrapelib': {
             'handlers': ['default'], 'level': 'INFO', 'propagate': False
@@ -75,7 +62,7 @@ LOGGING = {
             'handlers': ['default'], 'level': 'WARN', 'propagate': False
         },
         'boto': {
-            'handlers': ['default', 'sentry'], 'level': 'WARN', 'propagate': False
+            'handlers': ['default'], 'level': 'WARN', 'propagate': False
         },
     },
 }
