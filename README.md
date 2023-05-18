@@ -9,7 +9,7 @@ DataMade's source for municipal scrapers feeding [boardagendas.metro.net](https:
 
 Make your changes to the scraper code here.
 
-Merge your PR to push to `main` and publish a `staging` tag of the scraper image.
+Merge your PR to push to `main` and publish a `main` tag of the scraper image.
 
 To publish a `production` tag of the scraper image, sync the `main` branch with the
 `deploy` branch:
