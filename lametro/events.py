@@ -50,6 +50,12 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
     EVENTSPAGE = "https://metro.legistar.com/Calendar.aspx"
     TIMEZONE = "America/Los_Angeles"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if TOKEN:
+            self.params = {"token": TOKEN}
+
     def _pair_events(self, events):
         paired_events = []
         unpaired_events = {}
@@ -84,24 +90,26 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         else:
             if event.is_spanish:
                 LOGGER.critical("Could not find English event partner.")
+            else:
+                LOGGER.warning("Could not find Spanish event partner.")
 
             return None
 
-    def search(self, route, item_key, search_conditions):
-        search_url = self.BASE_URL + route
-
-        params = {"$filter": search_conditions}
-
-        # Add token to requests to the events endpoint, so we can capture SAP events.
-        if route == "/events/" and TOKEN:
-            params["token"] = TOKEN
-
-        try:
-            yield from self.pages(search_url, params=params, item_key=item_key)
-        except requests.HTTPError as e:
-            if e.response.status_code == 400:
-                raise ValueError(e.response.json()["Message"])
-            raise
+    #    def search(self, route, item_key, search_conditions):
+    #        search_url = self.BASE_URL + route
+    #
+    #        params = {"$filter": search_conditions}
+    #
+    #        # Add token to requests to the events endpoint, so we can capture SAP events.
+    #        if route == "/events/" and TOKEN:
+    #            params["token"] = TOKEN
+    #
+    #        try:
+    #            yield from self.pages(search_url, params=params, item_key=item_key)
+    #        except requests.HTTPError as e:
+    #            if e.response.status_code == 400:
+    #                raise ValueError(e.response.json()["Message"])
+    #            raise
 
     def api_events(self, *args, **kwargs):
         """
@@ -249,6 +257,8 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         )
 
         for event, web_event in self._merge_events(events):
+            print(event)
+
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
