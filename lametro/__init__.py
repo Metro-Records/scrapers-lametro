@@ -44,7 +44,7 @@ class Lametro(Jurisdiction):
             )
 
         org.add_post(
-            "Appointee of Mayor of the City of Los Angeles",
+            "Appointee of the Mayor of the City of Los Angeles",
             "Board Member",
             division_id="ocd-division/country:us/state:ca/place:los_angeles",
         )
@@ -56,7 +56,7 @@ class Lametro(Jurisdiction):
         )
 
         org.add_post(
-            "District 7 Director, California Department of Transportation (Caltrans), Appointee of the Governor of California",
+            "District 7 Director, California Department of Transportation (CalTrans), Appointee of the Governor of California",
             "Nonvoting Board Member",
             division_id="ocd-division/country:us/state:ca/transit:caltrans/district:7",
         )
@@ -68,7 +68,7 @@ class Lametro(Jurisdiction):
         )
 
         org.add_post(
-            "Appointee of Los Angeles County City Selection Committee, North County/San Fernando Valley sector",
+            "Appointee of the Los Angeles County City Selection Committee, North County/San Fernando Valley sector",
             "Board Member",
             division_id="ocd-division/country:us/state:ca/county:los_angeles/la_metro_sector:north_county_san_fernando_valley",
         )
@@ -86,7 +86,7 @@ class Lametro(Jurisdiction):
         )
 
         org.add_post(
-            "Appointee of Los Angeles County City Selection Committee, Southeast Long Beach sector",
+            "Appointee of Los Angeles County City Selection Committee, South East Long Beach sector",
             "Board Member",
             division_id="ocd-division/country:us/state:ca/county:los_angeles/la_metro_sector:southeast_long_beach",
         )
