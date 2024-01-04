@@ -7,39 +7,6 @@ from pupa.scrape import Scraper
 from pupa.scrape import Person, Organization
 
 
-VOTING_POSTS = {
-    "Jacquelyn Dupont-Walker": "Appointee of Mayor of the City of Los Angeles",
-    "Eric Garcetti": "Mayor of the City of Los Angeles",
-    "Mike Bonin": "Appointee of Mayor of the City of Los Angeles",
-    "Paul Krekorian": "Appointee of Mayor of the City of Los Angeles",
-    "Hilda L. Solis": "Los Angeles County Board Supervisor, District 1",
-    "Holly J. Mitchell": "Los Angeles County Board Supervisor, District 2",
-    "Mark Ridley-Thomas": "Los Angeles County Board Supervisor, District 2",
-    "Sheila Kuehl": "Los Angeles County Board Supervisor, District 3",
-    "Janice Hahn": "Los Angeles County Board Supervisor, District 4",
-    "Kathryn Barger": "Los Angeles County Board Supervisor, District 5",
-    "John Fasana": "Appointee of Los Angeles County City Selection Committee, San Gabriel Valley sector",
-    "James Butts": "Appointee of Los Angeles County City Selection Committee, Southwest Corridor sector",
-    "Diane DuBois": "Appointee of Los Angeles County City Selection Committee, Southeast Long Beach sector",
-    "Ara J. Najarian": "Appointee of Los Angeles County City Selection Committee, North County/San Fernando Valley sector",
-    "Robert Garcia": "Appointee of Los Angeles County City Selection Committee, Southeast Long Beach sector",
-    "Don Knabe": "Los Angeles County Board Supervisor, District 4",
-    "Michael Antonovich": "Los Angeles County Board Supervisor, District 5",
-    "Tim Sandoval": "Appointee of Los Angeles County City Selection Committee, San Gabriel Valley sector",
-    "Fernando Dutra": "Appointee of Los Angeles County City Selection Committee, Southeast Long Beach sector",
-    "Lindsey Horvath": "Los Angeles County Board Supervisor, District 3",
-    "Karen Bass": "Mayor of the City of Los Angeles",
-    "Katy Yaroslavsky": "Appointee of Mayor of the City of Los Angeles",
-}
-
-NONVOTING_POSTS = {
-    "Carrie Bowen": "Appointee of Governor of California",
-    "Shirley Choate": "District 7 Director, California Department of Transportation (Caltrans), Appointee of the Governor of California",
-    "John Bulinski": "District 7 Director, California Department of Transportation (Caltrans), Appointee of the Governor of California",
-    "Tony Tavares": "District 7 Director, California Department of Transportation (Caltrans), Appointee of the Governor of California",
-    "Gloria Roberts": "District 7 Director, California Department of Transportation (Caltrans), Appointee of the Governor of California",
-}
-
 ACTING_MEMBERS_WITH_END_DATE = {"Shirley Choate": date(2018, 10, 24)}
 
 BOARD_OFFICE_ROLES = (
@@ -68,8 +35,11 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
         )
         web_scraper.MEMBERLIST = "https://metro.legistar.com/People.aspx"
         web_info = {}
+        member_posts = {}
 
-        for _, organizations in web_scraper.councilMembers():
+        for member, organizations in web_scraper.councilMembers():
+            member_posts[member['Person Name']['label']] = member['Notes']
+
             for organization, _, _ in organizations:
                 organization_name = organization["Department Name"]["label"].strip()
                 organization_info = organization["Department Name"]
@@ -107,12 +77,12 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
                     )
 
                 if role != "Chief Executive Officer":
+                    post = member_posts.get(member)
+
                     if role == "non-voting member":
                         member_type = "Nonvoting Board Member"
-                        post = NONVOTING_POSTS.get(member)
                     else:
                         member_type = "Board Member"
-                        post = VOTING_POSTS.get(member)
 
                     start_date = self.toDate(term["OfficeRecordStartDate"])
                     end_date = self.toDate(term["OfficeRecordEndDate"])
