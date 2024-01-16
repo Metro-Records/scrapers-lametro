@@ -56,7 +56,7 @@ class Lametro(Jurisdiction):
         )
 
         org.add_post(
-            "District 7 Director, California Department of Transportation (CalTrans), Appointee of the Governor of California",
+            "District 7 Director, California Department of Transportation (Caltrans), Appointee of the Governor of California",
             "Nonvoting Board Member",
             division_id="ocd-division/country:us/state:ca/transit:caltrans/district:7",
         )
