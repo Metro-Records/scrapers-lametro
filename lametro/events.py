@@ -113,11 +113,22 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         """
         partial_scrape = kwargs.get("since_datetime", False)
 
-        events = (
-            LAMetroAPIEvent(event) for event in super().api_events(*args, **kwargs)
-        )
+        def unique_events():
+            seen_keys = set()
+            api_events = super(LametroEventScraper, self).api_events(*args, **kwargs)
+            for event in api_events:
+                la_event = LAMetroAPIEvent(event)
+                if la_event.own_key not in seen_keys:
+                    yield la_event
+                    seen_keys.add(la_event.own_key)
+                else:
+                    self.warning(
+                        f"Found duplicate event {la_event['EventBodyName']} at "
+                        "https://webapi.legistar.com/v1/metro/events/"
+                        f"{la_event['EventId']}"
+                    )
 
-        paired, unpaired = self._pair_events(events)
+        paired, unpaired = self._pair_events(unique_events())
 
         yield from paired
 
@@ -572,6 +583,10 @@ class LAMetroAPIEvent(dict):
     @property
     def is_spanish(self):
         return self["EventBodyName"].endswith(" (SAP)")
+
+    @property
+    def own_key(self):
+        return (self["EventBodyName"], self["EventDate"])
 
     @property
     def _partner_name(self):
