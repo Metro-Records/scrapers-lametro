@@ -1,6 +1,8 @@
 import datetime
 import logging
 
+from sentry_sdk import capture_exception
+
 from legistar.events import LegistarAPIEventScraper
 from pupa.scrape import Event, Scraper
 from legistar.base import LegistarScraper
@@ -342,23 +344,27 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                     ]
 
                 # Historically, the Legistar system has duplicated the EventItemAgendaSequence,
-                # resulting in data inaccuracies. The scrape should fail in such cases, until Metro
-                # cleans the data.
-                item_agenda_sequences = [
-                    item["extras"]["item_agenda_sequence"] for item in e.agenda
-                ]
-                if len(item_agenda_sequences) != len(set(item_agenda_sequences)):
-                    error_msg = "An agenda has duplicate agenda items on the Legistar grid: \
-                        {event_name} on {event_date} ({legistar_api_url}). \
-                        Contact Metro, and ask them to remove the duplicate EventItemAgendaSequence."
+                # resulting in data inaccuracies. In such cases, we'll log the event
+                # and notify Metro that their data needs to be cleaned (rather than failing).
+                try:
+                    item_agenda_sequences = [
+                        item["extras"]["item_agenda_sequence"] for item in e.agenda
+                    ]
+                    if len(item_agenda_sequences) != len(set(item_agenda_sequences)):
+                        error_msg = "An agenda has duplicate agenda items on the Legistar grid: \
+                            {event_name} on {event_date} ({legistar_api_url}). \
+                            Contact Metro, and ask them to remove the duplicate EventItemAgendaSequence."
 
-                    raise ValueError(
-                        error_msg.format(
-                            event_name=e.name,
-                            event_date=e.start_date.strftime("%B %d, %Y"),
-                            legistar_api_url=legistar_api_url,
+                        raise ValueError(
+                            error_msg.format(
+                                event_name=e.name,
+                                event_date=e.start_date.strftime("%B %d, %Y"),
+                                legistar_api_url=legistar_api_url,
+                            )
                         )
-                    )
+                except ValueError as e:
+                    capture_exception(e)
+
 
             e.add_participant(name=body_name, type="organization")
 
