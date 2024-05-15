@@ -362,8 +362,8 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                                 legistar_api_url=legistar_api_url,
                             )
                         )
-                except ValueError as e:
-                    capture_exception(e)
+                except ValueError as dupe_item_exc:
+                    capture_exception(dupe_item_exc)
 
 
             e.add_participant(name=body_name, type="organization")
