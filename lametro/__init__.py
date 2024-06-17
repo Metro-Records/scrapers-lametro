@@ -121,3 +121,9 @@ class Lametro(Jurisdiction):
             "https://metro.legistar.com/DepartmentDetail.aspx?ID=30222&GUID=5F27DA83-633F-4FEA-A4B0-0477551061B6&R=aef57793-1826-4cfa-b6e3-d6b42cf77527"
         )
         yield org
+
+        org = Organization(name="Special Board Budget Workshop", classification="legislature")
+
+        org.add_source("https://metro.legistar.com/DepartmentDetail.aspx?ID=52282&GUID=2FFCEDD3-18CA-4895-9998-8F9A2F533E4F&R=5c9ccace-e519-461a-9c62-aa987ea49f67")
+        
+        yield org
