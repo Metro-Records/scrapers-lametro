@@ -127,7 +127,3 @@ def public_private_bill_data(request):
     marked as having a 'restricted view,' i.e., private vs. public.
     '''
     return request.param
-
-@pytest.fixture
-def mocked_sentry_exception(mocker):
-    mocker.patch('lametro.events.capture_exception', autospec=True)
