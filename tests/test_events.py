@@ -74,13 +74,17 @@ def test_sequence_duplicate_error(event_scraper,
                 raised_exc = sentry_capture.call_args[0][0]
                 assert isinstance(raised_exc, DuplicateAgendaItemException)
 
+                # Make sure the error message we send is useful
                 error_msg = str(raised_exc)
-                legistar_api_url = f"{LametroEventScraper.BASE_URL}/events/{api_event['EventId']}"
+                legistar_api_url = (
+                    f"{LametroEventScraper.BASE_URL}/events/{api_event['EventId']}"
+                )
                 assert legistar_api_url in error_msg
                 assert event.name in error_msg
         else:
             for event in event_scraper.scrape():
                 assert len(event.agenda) == 2
+
 
 def test_events_paired(event_scraper, api_event, web_event, mocker):
     # Create a matching SAP event with a distinct ID
