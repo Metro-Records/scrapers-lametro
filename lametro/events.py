@@ -46,6 +46,18 @@ class UnmatchedEventError(Exception):
         super().__init__(message)
 
 
+class DuplicateAgendaItemException(Exception):
+    def __init__(self, event, legistar_api_url):
+        message = (
+            "An agenda has duplicate agenda items on the Legistar grid: "
+            f"{event.name} on {event.start_date.strftime('%B %d, %Y')} "
+            f"({legistar_api_url}). Contact Metro, and ask them to remove the "
+            "duplicate EventItemAgendaSequence."
+        )
+
+        super().__init__(message)
+
+
 class LametroEventScraper(LegistarAPIEventScraper, Scraper):
     BASE_URL = "https://webapi.legistar.com/v1/metro"
     WEB_URL = "https://metro.legistar.com/"
@@ -351,20 +363,9 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                         item["extras"]["item_agenda_sequence"] for item in e.agenda
                     ]
                     if len(item_agenda_sequences) != len(set(item_agenda_sequences)):
-                        error_msg = "An agenda has duplicate agenda items on the Legistar grid: \
-                            {event_name} on {event_date} ({legistar_api_url}). \
-                            Contact Metro, and ask them to remove the duplicate EventItemAgendaSequence."
-
-                        raise ValueError(
-                            error_msg.format(
-                                event_name=e.name,
-                                event_date=e.start_date.strftime("%B %d, %Y"),
-                                legistar_api_url=legistar_api_url,
-                            )
-                        )
-                except ValueError as dupe_item_exc:
-                    capture_exception(dupe_item_exc)
-
+                        raise DuplicateAgendaItemException(e, legistar_api_url)
+                except DuplicateAgendaItemException as exc:
+                    capture_exception(exc)
 
             e.add_participant(name=body_name, type="organization")
 

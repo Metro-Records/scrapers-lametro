@@ -5,7 +5,7 @@ import re
 
 from pupa.scrape.event import Event
 
-from lametro.events import LAMetroAPIEvent, LAMetroWebEvent
+from lametro.events import LAMetroAPIEvent, LAMetroWebEvent, DuplicateAgendaItemException, LametroEventScraper
 
 
 @pytest.mark.parametrize('api_status_name,scraper_assigned_status', [
@@ -64,17 +64,23 @@ def test_sequence_duplicate_error(event_scraper,
         mocker.patch('lametro.LametroEventScraper.agenda', return_value=[event_agenda_item, event_agenda_item_b])
 
         if should_error:
-            with pytest.raises(ValueError) as excinfo:
-                for event in event_scraper.scrape():
-                    assert 'An agenda has duplicate agenda items on the Legistar grid'\
-                           .format(api_event['EventId'])\
-                           in str(excinfo.value)
+            sentry_capture = mocker.patch(
+                "lametro.events.capture_exception", autospec=True
+            )
+            for event in event_scraper.scrape():
+                # Should alert Sentry whenever we find an
+                # event with duplicate agenda items
+                sentry_capture.assert_called_once()
+                raised_exc = sentry_capture.call_args[0][0]
+                assert isinstance(raised_exc, DuplicateAgendaItemException)
 
-                    assert event['EventBodyName'] in str(excinfo.value)
+                error_msg = str(raised_exc)
+                legistar_api_url = f"{LametroEventScraper.BASE_URL}/events/{api_event['EventId']}"
+                assert legistar_api_url in error_msg
+                assert event.name in error_msg
         else:
             for event in event_scraper.scrape():
                 assert len(event.agenda) == 2
-
 
 def test_events_paired(event_scraper, api_event, web_event, mocker):
     # Create a matching SAP event with a distinct ID
