@@ -406,14 +406,15 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             else:
                 approved_minutes = self.find_approved_minutes(event)
                 if approved_minutes:
-                    e.add_document(
-                        note=approved_minutes["MatterAttachmentName"],
-                        url=approved_minutes["MatterAttachmentHyperlink"],
-                        media_type="application/pdf",
-                        date=self.to_utc_timestamp(
-                            approved_minutes["MatterAttachmentLastModifiedUtc"]
-                        ).date(),
-                    )
+                    for minutes in approved_minutes:
+                        e.add_document(
+                            note=minutes["MatterAttachmentName"],
+                            url=minutes["MatterAttachmentHyperlink"],
+                            media_type="application/pdf",
+                            date=self.to_utc_timestamp(
+                                minutes["MatterAttachmentLastModifiedUtc"]
+                            ).date(),
+                        )
                     e.extras["approved_minutes"] = True
 
             for audio in event["audio"]:
@@ -533,8 +534,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if len(attachments) == 0:
             raise ValueError("No attachments for the approved minutes matter")
         else:
-            (attachment,) = [each for each in attachments]
-            return attachment
+            return attachments
 
 
 class LAMetroAPIEvent(dict):
