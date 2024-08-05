@@ -406,14 +406,15 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             else:
                 approved_minutes = self.find_approved_minutes(event)
                 if approved_minutes:
-                    e.add_document(
-                        note=approved_minutes["MatterAttachmentName"],
-                        url=approved_minutes["MatterAttachmentHyperlink"],
-                        media_type="application/pdf",
-                        date=self.to_utc_timestamp(
-                            approved_minutes["MatterAttachmentLastModifiedUtc"]
-                        ).date(),
-                    )
+                    for minutes in approved_minutes:
+                        e.add_document(
+                            note=minutes["MatterAttachmentName"],
+                            url=minutes["MatterAttachmentHyperlink"],
+                            media_type="application/pdf",
+                            date=self.to_utc_timestamp(
+                                minutes["MatterAttachmentLastModifiedUtc"]
+                            ).date(),
+                        )
                     e.extras["approved_minutes"] = True
 
             for audio in event["audio"]:
@@ -532,52 +533,8 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         if len(attachments) == 0:
             raise ValueError("No attachments for the approved minutes matter")
-        elif len(attachments) == 1:
-            return attachments[0]
         else:
-            # This dictionary contains a mapping of dates of events known to
-            # have more than one minutes file attached to the approval matter,
-            # to the name of the attachment representing the correct minutes
-            # file.
-            handled_cases = {
-                "May 28, 2015": "Regular Board Meeting Minutes on May 28, 2015",
-                "September 24, 2020": "LA SAFE Minutes - September 24, 2020",
-                "June 24, 2021": "LA SAFE MINUTES - June 24, 2021",
-                "December 2, 2021": "Regular Board Meeting MINUTES - December 2, 2021",
-                "January 27, 2022": "Regular Board Meeting MINUTES - January 27, 2022",
-                "February 24, 2022": "MINUTES - February 24, 2022 RBM",
-                "June 23, 2022": "Regular Board Meeting MINUTES - June 23, 2022",
-                "December 1, 2022": "Regular Board Meeting MINUTES - December 1, 2022",
-            }
-
-            if date in handled_cases:
-                attachment_name = handled_cases[date]
-                (attachment,) = [
-                    each
-                    for each in attachments
-                    if each["MatterAttachmentName"] == attachment_name
-                ]
-                return attachment
-
-            else:
-                try:
-                    (attachment,) = [
-                        each
-                        for each in attachments
-                        if "minutes" in each["MatterAttachmentName"].lower()
-                    ]
-                except ValueError:
-                    LOGGER.critical(
-                        "More than one attachment for the approved minutes matter"
-                    )
-                else:
-                    msg = (
-                        "More than attachment for minutes matter {0}, using {1}".format(
-                            matter["MatterId"], attachment["MatterAttachmentName"]
-                        )
-                    )
-                    self.info(msg)
-                    return attachment
+            return attachments
 
 
 class LAMetroAPIEvent(dict):
