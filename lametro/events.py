@@ -502,8 +502,13 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         result = self.search(
             "/matters/",
             "MatterId",
-            "MatterBodyId eq {} and substringof('{}', MatterTitle) and substringof('Minutes', MatterTitle)".format(
-                event["EventBodyId"], date
+            (
+                f"MatterBodyId eq {event["EventBodyId"]} and " +
+                f"substringof('{date}', MatterTitle) and " +
+                "(" +
+                    "(MatterTypeName eq 'Minutes') or " +
+                    "(substringof('Minutes', MatterTitle) and MatterTypeName eq 'Informational Report')" +
+                ")"
             ),
         )
 
