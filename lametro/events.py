@@ -1,5 +1,7 @@
 import datetime
 import logging
+import requests
+import io
 
 from sentry_sdk import capture_exception
 
@@ -7,7 +9,9 @@ from legistar.events import LegistarAPIEventScraper
 from pupa.scrape import Event, Scraper
 from legistar.base import LegistarScraper
 
-import requests
+import pdfplumber
+import pytesseract
+from PIL import Image
 
 try:
     from .secrets import TOKEN
@@ -503,7 +507,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             "/matters/",
             "MatterId",
             (
-                f"MatterBodyId eq {event["EventBodyId"]} and " +
+                f"MatterBodyId eq {event['EventBodyId']} and " +
                 f"substringof('{date}', MatterTitle) and " +
                 "(" +
                     "(MatterTypeName eq 'Minutes') or " +
@@ -538,8 +542,37 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         if len(attachments) == 0:
             raise ValueError("No attachments for the approved minutes matter")
-        else:
+        elif len(attachments) == 1:
             return attachments
+        else:
+            """
+            Multiple attachments have been found.
+            Return only those that look like minutes files.
+            """
+            valid_attachments = []
+            for attach in attachments:
+                url = attach["MatterAttachmentHyperlink"]
+                response = requests.get(url)
+
+                with io.BytesIO(response.content) as filestream:
+                    pdf = pdfplumber.open(filestream)
+                    cover_page = pdf.pages[0]
+
+                    cover_page_text = cover_page.extract_text()
+                    if not cover_page_text:
+                        # No extractable text found.
+                        # Turn the page into an image and use OCR to get text.
+                        pdf_image = cover_page.to_image(resolution=150)
+
+                        with io.BytesIO() as in_mem_image:
+                            pdf_image.save(in_mem_image)
+                            in_mem_image.seek(0)
+                            cover_page_text = pytesseract.image_to_string(Image.open(in_mem_image))
+
+                if "MINUTES" in cover_page_text:
+                    valid_attachments.append(attach)
+
+            return valid_attachments
 
 
 class LAMetroAPIEvent(dict):
