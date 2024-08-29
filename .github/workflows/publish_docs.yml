@@ -14,7 +14,6 @@ jobs:
       contents: write
     steps:
       - name: Check out repository
-        if: steps.docs-changed.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
       - uses: tj-actions/changed-files@v45
