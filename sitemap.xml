@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/local-development.html</loc>
+    <lastmod>2024-08-29T21:08:09.868Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/scrapers/people.html</loc>
+    <lastmod>2024-08-29T21:08:09.868Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/scrapers/events.html</loc>
+    <lastmod>2024-08-29T21:08:09.868Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/index.html</loc>
+    <lastmod>2024-08-29T21:08:09.867Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/debugging.html</loc>
+    <lastmod>2024-08-29T21:08:09.867Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/deployment.html</loc>
+    <lastmod>2024-08-29T21:08:09.867Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/scrapers/bills.html</loc>
+    <lastmod>2024-08-29T21:08:09.868Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Metro-Records.github.io/scrapers-lametro/scrapers/jurisdiction.html</loc>
+    <lastmod>2024-08-29T21:08:09.868Z</lastmod>
+  </url>
+</urlset>

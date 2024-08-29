@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.54">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Debugging – LA Metro Scrapers Documentation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./debugging.html">Debugging</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">LA Metro Scrapers Documentation</a> 
+        <div class="sidebar-tools-main">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://github.com/Metro-Records/scrapers-lametro">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://github.com/Metro-Records/scrapers-lametro/issues">
+            Issue Tracker
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://github.com/opencivicdata/scrapers-us-municipal/issues?q=is%3Aissue+metro">
+            Legacy Issue Tracker
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./debugging.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Debugging</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./local-development.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local development</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./deployment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Deployment</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Scrapers</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./scrapers/jurisdiction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Jurisdiction Scraper</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./scrapers/people.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Board Member and Legislative Body Scrapers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./scrapers/bills.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bill Scraper</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./scrapers/events.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Event Scraper</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#debugging-data-issues" id="toc-debugging-data-issues" class="nav-link active" data-scroll-target="#debugging-data-issues">Debugging data issues</a>
+  <ul class="collapse">
+  <li><a href="#dont-panic" id="toc-dont-panic" class="nav-link" data-scroll-target="#dont-panic">DON’T PANIC!</a></li>
+  <li><a href="#categories-of-failure" id="toc-categories-of-failure" class="nav-link" data-scroll-target="#categories-of-failure">Categories of failure</a>
+  <ul class="collapse">
+  <li><a href="#data-is-missing" id="toc-data-is-missing" class="nav-link" data-scroll-target="#data-is-missing">Data is missing</a></li>
+  <li><a href="#data-is-incorrect" id="toc-data-is-incorrect" class="nav-link" data-scroll-target="#data-is-incorrect">Data is incorrect</a></li>
+  </ul></li>
+  <li><a href="#inspecting-data-and-logs" id="toc-inspecting-data-and-logs" class="nav-link" data-scroll-target="#inspecting-data-and-logs">Inspecting data and logs</a>
+  <ul class="collapse">
+  <li><a href="#more-on-airflow" id="toc-more-on-airflow" class="nav-link" data-scroll-target="#more-on-airflow">More on Airflow</a></li>
+  <li><a href="#get-links-to-source-data-from-legistar" id="toc-get-links-to-source-data-from-legistar" class="nav-link" data-scroll-target="#get-links-to-source-data-from-legistar">Get links to source data from Legistar</a></li>
+  <li><a href="#view-an-entity-in-the-councilmatic-database" id="toc-view-an-entity-in-the-councilmatic-database" class="nav-link" data-scroll-target="#view-an-entity-in-the-councilmatic-database">View an entity in the Councilmatic database</a></li>
+  <li><a href="#inspect-the-scraper-logs" id="toc-inspect-the-scraper-logs" class="nav-link" data-scroll-target="#inspect-the-scraper-logs">Inspect the scraper logs</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Debugging</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="debugging-data-issues" class="level1">
+<h1>Debugging data issues</h1>
+<section id="dont-panic" class="level3">
+<h3 class="anchored" data-anchor-id="dont-panic">DON’T PANIC!</h3>
+<p>Many issues can arise in the Metro galaxy, from the shallowest part of the frontend to the deepest depths of the backend. However, these issues generally fall into <a href="#categories-of-failure">two broad categories</a>:</p>
+<ul>
+<li><a href="#data-is-missing">Data is missing</a></li>
+<li><a href="#data-is-incorrect">Data is incorrect</a></li>
+<li>Appendices
+<ul>
+<li><a href="#more-on-airflow">More on Airflow</a></li>
+<li><a href="#view-an-entity-in-the-councilmatic-database">View an entity in the Councilmatic database</a></li>
+<li><a href="#inspect-the-scraper-logs">Inspect the scraper logs</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="categories-of-failure" class="level2">
+<h2 class="anchored" data-anchor-id="categories-of-failure">Categories of failure</h2>
+<p>This section expounds on common culprits in our three categories of failure: missing data, incorrect data, and issues with metadata. The culprits are ordered from most to least likely, therefore we suggest moving through the category relevant to your problem in order until you identify the issue.</p>
+<section id="data-is-missing" class="level3">
+<h3 class="anchored" data-anchor-id="data-is-missing">Data is missing</h3>
+<section id="scrape-failures" class="level4">
+<h4 class="anchored" data-anchor-id="scrape-failures">Scrape failures</h4>
+<p>Our scrapers are brittle by design, i.e., they will generally fail if they try to ingest data that is formatted incorrectly. If there has been a scrape failure, there should be a corresponding exception in <a href="https://datamade.sentry.io/projects/scrapers-lametro/?project=4504447849201664">the <code>scrapers-lametro</code> project in Sentry</a>.</p>
+<p>Common exceptions include <code>OperationalError</code>, which indicates that something went awry with the server (e.g., not enough disk space) and <code>ScraperError</code>, which indicates a particular issue with the one of the scrapers.</p>
+<p>If you don’t see an issue in Sentry, but you have reason to believe there was an error (or that our integration with Sentry is faulty), you can <a href="#inspect-the-scraper-logs">follow our documentation for finding errors in the scraper logs</a>.</p>
+<p>If there is not an error in Sentry or in the scraper logs, then the scrape ran.</p>
+</section>
+<section id="inaccurate-timestamps-in-the-legistar-api" class="level4">
+<h4 class="anchored" data-anchor-id="inaccurate-timestamps-in-the-legistar-api">Inaccurate timestamps in the Legistar API</h4>
+<p>If scrapes are running, by far the most common source of issues is the scraper failing to capture changes to a bill or event. The root issue is that we rely on timestamps that should indicate an update to determine which bills and events to scrape. In reality, these timestamps do not always update when a change is made to an event or bill in Legistar. We have a couple of strategies to get around this:</p>
+<ol type="1">
+<li>During <a href="https://github.com/datamade/la-metro-dashboard/blob/ac416e5e03f6a97fb9b0c6112093c679cefb0d1c/dags/constants.py#L41-L59">the Friday support window</a>, we scrape all events and bills at the top of every hour.</li>
+<li>When we run windowed scrapes, we scrape all events and bills with timestamps within <em>or after</em> the given window. This is because upcoming events and bills are the ones that are most likely to change. For example, a scrape with a one-hour window will scrape any events that have changed in the past hour, plus any events with a future start date. Here is <a href="https://docs.google.com/document/d/1LjZ61g4s-eiP-aWo4GVoOv27SF7iZ8npLV6Gg9b_BsI/edit?usp=sharing">a complete list of the timestamps we consider</a> when scraping events and bills.</li>
+</ol>
+<p>Taken together, these strategies <em>should</em> ensure that any change appears on the Metro site within an hour of being made, however edge cases can happen!</p>
+<p>To determine whether timestamps are causing the problem, follow <a href="#view-an-entity-in-the-councilmatic-database">our documentation for viewing an entity</a> to ascertain when an entity was last updated in the Councilmatic database and compare it to <a href="https://docs.google.com/document/d/1LjZ61g4s-eiP-aWo4GVoOv27SF7iZ8npLV6Gg9b_BsI/edit?usp=sharing">the timestamps we consider</a> in windowed scrapes. If the entity has not been updated in Councilmatic since the latest timestamp in the Legistar API, trigger a broader scrape.</p>
+</section>
+<section id="deeper-problems" class="level4">
+<h4 class="anchored" data-anchor-id="deeper-problems">Deeper problems</h4>
+<p>If the scrapes and ETL pipeline are running as expected, but data is missing, then there is a deeper issue. A good first question: What are the most recent changes in the scraper codebase? Could this have caused unusual behavior?</p>
+<p>The scrapers work through the cooperation of several repos, and the bug fix may require investigating one or more of these repos.</p>
+<ul>
+<li><a href="https://github.com/Metro-Records/scrapers-lametro"><code>Metro-Records/scrapers-lametro</code></a> contains Metro-specific code for the <code>Bill</code>, <code>Event</code>, and <code>Person</code> scrapers. If you need to patch the scraper code, create a PR against this repo.</li>
+<li><a href="https://github.com/Metro-Records/la-metro-dashboard"><code>Metro-Records/la-metro-dashboard</code></a> is the Airflow app that schedules scrapes and the scripts that define them. If you need to change the scheduling of scrapes, create a PR against this repo.</li>
+<li><a href="https://github.com/opencivicdata/python-legistar-scraper/tree/master/legistar"><code>opencivicdata/python-legistar-scraper/tree/master/legistar</code></a> contains the <code>LegistarScraper</code> and <code>LegistarAPIScraper</code> variants, from which the Metro scrapers inherit. If you need to patch the Legistar scraping code, create a PR against this repo.</li>
+<li>All scrapers depend on <a href="https://github.com/opencivicdata/pupa">the <code>pupa</code> framework</a> for scraping and importing data using the OCD standard. In the unlikely event that you need to patch <code>pupa</code>, create a fork, then submit a PR against this repo.</li>
+</ul>
+</section>
+</section>
+<section id="data-is-incorrect" class="level3">
+<h3 class="anchored" data-anchor-id="data-is-incorrect">Data is incorrect</h3>
+<section id="legistar-contains-the-wrong-data" class="level4">
+<h4 class="anchored" data-anchor-id="legistar-contains-the-wrong-data">Legistar contains the wrong data</h4>
+<p>Data issues can occur when the Legistar API or web interface displays the wrong information. This generally happens with Metro staff enters information that is incorrect.</p>
+<p>If Metro reports that data is incorrect, follow <a href="#view-an-entity-in-the-councilmatic-database">our documentation for viewing an entity</a> to inspect the problematic object and view its sources in the Legistar API. If the erroneous data matches the API sources, report the error the Metro and wait for them to resolve the issue.</p>
+</section>
+<section id="metro-has-deleted-data-from-legistar" class="level4">
+<h4 class="anchored" data-anchor-id="metro-has-deleted-data-from-legistar">Metro has deleted data from Legistar</h4>
+<p><code>pupa</code>, our scraping framework, <a href="https://github.com/opencivicdata/pupa/issues/295">doesn’t know how to identify information that has been deleted</a>. Sometimes, we scrape information that Metro later removes.</p>
+<p>If this happens for a bill, event, or membership, shell into the server and remove the erroneous entity through the ORM. N.b., it’s easiest to get at this through the relevant person, e.g.,</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lametro.models <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>LAMetroPerson.objects.get(family_name<span class="op">=</span><span class="st">'Mitchell'</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>LAMetroPerson: Holly Mitchell<span class="op">&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>LAMetroPerson.objects.get(family_name<span class="op">=</span><span class="st">'Mitchell'</span>).memberships.<span class="bu">filter</span>(organization__name__endswith<span class="op">=</span><span class="st">'Committee'</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>QuerySet [<span class="op">&lt;</span>Membership: Holly Mitchell <span class="kw">in</span> Operations, Safety, <span class="kw">and</span> Customer Experience Committee (Member)<span class="op">&gt;</span>, <span class="op">&lt;</span>Membership: Holly Mitchell <span class="kw">in</span> Finance, Budget <span class="kw">and</span> Audit Committee (Member)<span class="op">&gt;</span>]<span class="op">&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>LAMetroPerson.objects.get(family_name<span class="op">=</span><span class="st">'Mitchell'</span>).memberships.<span class="bu">filter</span>(organization__name__endswith<span class="op">=</span><span class="st">'Committee'</span>).count()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>LAMetroPerson.objects.get(family_name<span class="op">=</span><span class="st">'Mitchell'</span>).memberships.<span class="bu">filter</span>(organization__name__endswith<span class="op">=</span><span class="st">'Committee'</span>).delete()</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>(<span class="dv">2</span>, {<span class="st">'lametro.Membership'</span>: <span class="dv">2</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="deeper-issues" class="level4">
+<h4 class="anchored" data-anchor-id="deeper-issues">Deeper issues</h4>
+<p>Sometimes, there is not a problem with the data, but rather there is an error in how it is displayed in the Metro Councilmatic instance. This class of issues is generally very rare. As with deeper issues with the scrapers, a helpful first question is: What are the most recent changes, and could they be the source of the problem you’re seeing?</p>
+<p>Base models and view logic are defined in <a href="https://github.com/datamade/django-councilmatic/tree/2.5">django-councilmatic</a>. Metro generally uses the most recent release of the 2.5.x series, so be sure you’re consulting the <code>2.5</code> branch of <code>django-councilmatic</code> when you start spelunking.</p>
+<p>Metro makes a number of customizations to the models and view logic in this repository. Consult <a href="https://github.com/datamade/la-metro-councilmatic/releases">the most recent release</a> to view the code that’s deployed to production.</p>
+</section>
+</section>
+</section>
+<section id="inspecting-data-and-logs" class="level2">
+<h2 class="anchored" data-anchor-id="inspecting-data-and-logs">Inspecting data and logs</h2>
+<section id="more-on-airflow" class="level3">
+<h3 class="anchored" data-anchor-id="more-on-airflow">More on Airflow</h3>
+<p>The Metro data pipeline, both scrapes and management commands to perform subsequent ETL, are scheduled and run by our Metro Airflow instance, located at <a href="https://la-metro-dashboard-heroku-prod.datamade.us">https://la-metro-dashboard-heroku-prod.datamade.us</a>. Consult the DataMade BitWarden for login credentials. (Search <code>metro-support@datamade.us</code> in our shared folder!)</p>
+<p>The dashboard lives on GitHub, <a href="https://github.com/Metro-Records/la-metro-dashboard">here</a>.</p>
+<p>Apache maintains thorough documentation of <a href="http://airflow.apache.org/docs/stable/concepts.html">core concepts</a>, as well as <a href="http://airflow.apache.org/docs/stable/ui.html">navigating the UI</a>. If you’ve never used Airflow before, these are great resources to start with!</p>
+</section>
+<section id="get-links-to-source-data-from-legistar" class="level3">
+<h3 class="anchored" data-anchor-id="get-links-to-source-data-from-legistar">Get links to source data from Legistar</h3>
+<p>If there is an issue with a particular entity, view that entity’s detail page on the board agendas site (<a href="https://boardagendas.metro.net">https://boardagendas.metro.net</a>). Links to source data from Legistar will be logged to your browser’s developer console.</p>
+</section>
+<section id="view-an-entity-in-the-councilmatic-database" class="level3">
+<h3 class="anchored" data-anchor-id="view-an-entity-in-the-councilmatic-database">View an entity in the Councilmatic database</h3>
+<section id="retrieve-the-entity-in-the-django-shell" class="level4">
+<h4 class="anchored" data-anchor-id="retrieve-the-entity-in-the-django-shell">Retrieve the entity in the Django shell</h4>
+<p>Shell into a running instance of LA Metro Councilmatic using either the Heroku CLI:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">heroku</span> login</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">heroku</span> ps:exec <span class="at">--app</span><span class="op">=</span>lametro-councilmatic-production</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>or Heroku’s web-based console:</p>
+<p><img width="717" alt="Screenshot 2024-08-06 at 1 34 59 PM" src="https://github.com/user-attachments/assets/5ba3ff96-0b26-4447-9683-5d59521ec9b7"></p>
+<p>with <code>python manage.py shell</code>.</p>
+<p>Retrieve the problematic entity using its slug, which you can retrieve from the URL of its detail page.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># In the Django shell</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> lametro.models <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> entity <span class="op">=</span> LAMetroEvent.objects.get(slug<span class="op">=</span><span class="st">'regular-board-meeting-036b08c9a3f3'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can use the same ORM query to retrieve any entity. Simply swap out <code>LAMetroEvent</code> for the correct model and, of course, update the OCD ID.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Entity</th>
+<th>Model</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Person</td>
+<td>LAMetroPerson</td>
+</tr>
+<tr class="even">
+<td>Committee</td>
+<td>LAMetroOrganization</td>
+</tr>
+<tr class="odd">
+<td>Bill</td>
+<td>LAMetroBill</td>
+</tr>
+<tr class="even">
+<td>Event</td>
+<td>LAMetroEvent</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="view-useful-information" class="level4">
+<h4 class="anchored" data-anchor-id="view-useful-information">View useful information</h4>
+<p>Assuming you have retrieved the entity as illustrated in the previous step, you can view its last updated date like this:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> entity.updated_at</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>datetime.datetime(<span class="dv">2020</span>, <span class="dv">3</span>, <span class="dv">25</span>, <span class="dv">0</span>, <span class="dv">47</span>, <span class="dv">3</span>, <span class="dv">471572</span>, tzinfo<span class="op">=&lt;</span>UTC<span class="op">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can also view its sources like this:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pprint</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint.pprint([(source.note, source.url) <span class="cf">for</span> source <span class="kw">in</span> entity.sources.<span class="bu">all</span>()])</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>[(<span class="st">'api'</span>, <span class="st">'http://webapi.legistar.com/v1/metro/events/1384'</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a> (<span class="st">'api (sap)'</span>, <span class="st">'http://webapi.legistar.com/v1/metro/events/1493'</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a> (<span class="st">'web'</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">'https://metro.legistar.com/MeetingDetail.aspx?LEGID=1384&amp;GID=557&amp;G=A5FAA737-A54D-4A6C-B1E8-FF70F765FA94'</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a> (<span class="st">'web (sap)'</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">'https://metro.legistar.com/MeetingDetail.aspx?LEGID=1493&amp;GID=557&amp;G=A5FAA737-A54D-4A6C-B1E8-FF70F765FA94'</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Events have Spanish language sources (e.g., “api (sap)”), as well. In initial debugging, focus on the “api” and “web” sources – by visiting these links and checking that the data in Legistar appears as expected.</p>
+</section>
+</section>
+<section id="inspect-the-scraper-logs" class="level3">
+<h3 class="anchored" data-anchor-id="inspect-the-scraper-logs">Inspect the scraper logs</h3>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The timestamps in the scraper logs are in Chicago local time!</p>
+</div>
+</div>
+<p>If you have reason to believe the scrape has failed, but you don’t see an exception in Sentry, you can make double sure by consulting the logs for the scraping DAGs <a href="https://la-metro-dashboard-heroku-prod.datamade.us">in the dashboard</a>.</p>
+<section id="confirming-the-scrape-ran" class="level4">
+<h4 class="anchored" data-anchor-id="confirming-the-scrape-ran">Confirming the scrape ran</h4>
+<p>To confirm the scrape ran, click the name of a DAG to pull up the tree view, which will display the status of the last 25 DAG runs.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://i.imgur.com/9NDdEpy.png" class="img-fluid figure-img"></p>
+<figcaption>windowed_bill_scraping DAG tree view</figcaption>
+</figure>
+</div>
+<p>Note that the scraping DAGs employ <a href="https://airflow.apache.org/docs/stable/concepts.html?highlight=branch#branching">branch operators</a> to determine what kind of scraping task to run. Be sure to look closely to verify that the task you’re expecting is green (succeeded), not pink (skipped).</p>
+</section>
+<section id="verifying-whether-an-error-occurred" class="level4">
+<h4 class="anchored" data-anchor-id="verifying-whether-an-error-occurred">Verifying whether an error occurred</h4>
+<p>The dashboard has DAGs corresponding to the full overnight scrape, windowed scrapes, fast full scrapes, and hourly processing. To view the logs associated with tasks in a particular DAG, click the name of the DAG to go to the Tree View, which shows you the last 24 runs of the DAG. Then, click the box associated with the task for which you’d like the view the logs. This will pop open a window containing, among other things, a link to the logs. Click the link to view the logs!</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://i.imgur.com/MSTc4O0.gif" class="img-fluid figure-img"></p>
+<figcaption>View the logs for the most recent <code>convert_attachment_text</code> run</figcaption>
+</figure>
+</div>
+<p>If there has been an error, the logs for the implicated task should contain something like this:</p>
+<pre><code>import memberships...
+Traceback (most recent call last):
+  File "/home/datamade/.virtualenvs/opencivicdata/bin/pupa", line 8, in &lt;module&gt;
+    sys.exit(main())
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/__main__.py", line 68, in main
+    subcommands[args.subcommand].handle(args, other)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/commands/update.py", line 278, in handle
+    return self.do_handle(args, other, juris)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/commands/update.py", line 329, in do_handle
+    report['import'] = self.do_import(juris, args)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/commands/update.py", line 216, in do_import
+    report.update(membership_importer.import_directory(datadir))
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/base.py", line 197, in import_directory
+    return self.import_data(json_stream())
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/base.py", line 234, in import_data
+    obj_id, what = self.import_item(data)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/base.py", line 258, in import_item
+    obj = self.get_object(data)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/memberships.py", line 36, in get_object
+    return self.model_class.objects.get(**spec)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/django/db/models/manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/django/db/models/query.py", line 412, in get
+    (self.model._meta.object_name, num)
+opencivicdata.core.models.people_orgs.MultipleObjectsReturned: get() returned more than one Membership -- it returned 2!
+Sentry is attempting to send 1 pending error messages
+Waiting up to 10 seconds
+Press Ctrl-C to quit
+05/02/2020 00:40:09 INFO pupa: save jurisdiction New York City as jurisdiction_ocd-jurisdiction-country:us-state:ny-place:new_york-government.json
+05/02/2020 00:40:09 INFO pupa: save organization New York City Council as organization_62bd3c8a-8c37-11ea-b678-122a3d729da3.json
+05/02/2020 00:40:09 INFO pupa: save post District 1 as post_62bdb9c6-8c37-11ea-b678-122a3d729da3.json</code></pre>
+<p>The timestamps at the bottom correspond to the scrape <em>after</em> the error occurred, so you can use them to determine when the broken scrape occurred and whether it’s relevant to the missing data.</p>
+
+
+</section>
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/Metro-Records\.github\.io\/scrapers-lametro\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
