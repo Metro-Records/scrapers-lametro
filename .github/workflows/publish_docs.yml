@@ -30,6 +30,7 @@ jobs:
         if: steps.docs-changed.outputs.any_changed == 'true'
         uses: quarto-dev/quarto-actions/publish@v2
         with:
+          path: docs
           target: gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
