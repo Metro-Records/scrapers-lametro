@@ -1,0 +1,34 @@
+on:
+  workflow_dispatch:
+  push:
+    branches: main
+
+name: Quarto Publish
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: tj-actions/changed-files@v45
+        id: docs-changed
+        with:
+          files: |
+            docs/*
+
+      - name: Check out repository
+        if: steps.docs-changed.outputs.any_changed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Quarto
+        if: steps.docs-changed.outputs.any_changed == 'true'
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Render and Publish
+        if: steps.docs-changed.outputs.any_changed == 'true'
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
