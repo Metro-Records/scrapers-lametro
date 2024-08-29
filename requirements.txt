@@ -1,0 +1,10 @@
+https://github.com/opencivicdata/pupa/archive/master.zip
+https://github.com/opencivicdata/python-legistar-scraper/archive/master.zip
+django-councilmatic==3.2
+lxml
+sh 
+pytest==6.2.5
+pytest-mock==1.10.1
+requests-mock==1.5.2
+requests[security]
+sentry-sdk
