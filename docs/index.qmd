@@ -2,8 +2,6 @@
 title: "LA Metro Scrapers Documentation"
 ---
 
-Test change!
-
 Welcome to the documentation for the LA Metro Scrapers! Here, you'll find
 information about local development, deployment, and an overview of each
 scraper (and decisions that we've made about them).

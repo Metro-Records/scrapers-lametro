@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-      - hcg/docs
-
 
 jobs:
   build-and-deploy:
