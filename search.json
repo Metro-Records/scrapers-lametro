@@ -1,5 +1,33 @@
 [
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "",
+    "text": "Test change!\nWelcome to the documentation for the LA Metro Scrapers! Here, you’ll find information about local development, deployment, and an overview of each scraper (and decisions that we’ve made about them)."
+  },
+  {
+    "objectID": "index.html#how-do-they-work",
+    "href": "index.html#how-do-they-work",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "How do they work?",
+    "text": "How do they work?\nAt a high level, the scrapers retrieve information from Metro instances of the Legistar interface, also known as InSite, and the Legistar API (endpoints at https://webapi.legistar.com/metro/*).\nSee the relevant scraper documentation for more information about where information comes from, and how it is parsed."
+  },
+  {
+    "objectID": "index.html#how-are-they-run",
+    "href": "index.html#how-are-they-run",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "How are they run?",
+    "text": "How are they run?\nThe scrapers are run by Airflow and populate LA Metro Councilmatic instances, outlined below.\n\n\n\nScraper image tag\nAirflow instance\nMetro instance\n\n\n\n\nmain\nhttps://la-metro-dashboard-heroku.datamade.us/home\nhttps://la-metro-councilmatic-staging.herokuapp.com/\n\n\ndeploy\nhttps://la-metro-dashboard-heroku-prod.datamade.us/home\nhttps://boardagendas.metro.net\n\n\n\nSee Deployment for more on how scraper image tags are built."
+  },
+  {
+    "objectID": "index.html#what-do-they-depend-on",
+    "href": "index.html#what-do-they-depend-on",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "What do they depend on?",
+    "text": "What do they depend on?\nThe scrapers have a couple of key dependencies.\n\npupa is the framework for scraping and organizing data according to the Open Civic Data standard. Our scrapers are subclasses of pupa.Scraper, and we use the pupa CLI to run scrapes.\n\nSee Useful pupa commands for more on the CLI.\n\npython-legistar-scraper is a Python wrapper for InSite and the Legistar API that we use to retrieve data. Our scrapers are also subclasses of the relevant LegistarScraper subclasses from this library."
+  },
+  {
     "objectID": "local-development.html",
     "href": "local-development.html",
     "title": "Local development",
@@ -30,28 +58,6 @@
     ]
   },
   {
-    "objectID": "scrapers/people.html",
-    "href": "scrapers/people.html",
-    "title": "Board Member and Legislative Body Scrapers",
-    "section": "",
-    "text": "Located in lametro/people.py\nCreates the board and its committees (or, bodies of type “Committee” or “Independent Taxpayer Oversight Committee”)\nCreates members of the above bodies and membership objects for each of their terms",
-    "crumbs": [
-      "Scrapers",
-      "Board Member and Legislative Body Scrapers"
-    ]
-  },
-  {
-    "objectID": "scrapers/people.html#key-issues",
-    "href": "scrapers/people.html#key-issues",
-    "title": "Board Member and Legislative Body Scrapers",
-    "section": "Key issues",
-    "text": "Key issues\n\nMemberships are tricky! Sometimes, they are updated in ways that don’t resolve correctly, introducing duplicates. Other times, they are deleted from Legistar, which is a challenge for us to detect.\n\nConsider start date in addition to, or instead of, end date when importing memberships\nCommittees: Old Committee members showing\nFind a mechanism to handle data deleted from the source system",
-    "crumbs": [
-      "Scrapers",
-      "Board Member and Legislative Body Scrapers"
-    ]
-  },
-  {
     "objectID": "scrapers/events.html",
     "href": "scrapers/events.html",
     "title": "Event Scraper",
@@ -74,32 +80,26 @@
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "LA Metro Scrapers Documentation",
+    "objectID": "scrapers/bills.html",
+    "href": "scrapers/bills.html",
+    "title": "Bill Scraper",
     "section": "",
-    "text": "Welcome to the documentation for the LA Metro Scrapers! Here, you’ll find information about local development, deployment, and an overview of each scraper (and decisions that we’ve made about them)."
+    "text": "Located in lametro/bills.py\nCreates board reports and their associated attachments, sponsorships, votes, relations, and topics",
+    "crumbs": [
+      "Scrapers",
+      "Bill Scraper"
+    ]
   },
   {
-    "objectID": "index.html#how-do-they-work",
-    "href": "index.html#how-do-they-work",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "How do they work?",
-    "text": "How do they work?\nAt a high level, the scrapers retrieve information from Metro instances of the Legistar interface, also known as InSite, and the Legistar API (endpoints at https://webapi.legistar.com/metro/*).\nSee the relevant scraper documentation for more information about where information comes from, and how it is parsed."
-  },
-  {
-    "objectID": "index.html#how-are-they-run",
-    "href": "index.html#how-are-they-run",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "How are they run?",
-    "text": "How are they run?\nThe scrapers are run by Airflow and populate LA Metro Councilmatic instances, outlined below.\n\n\n\nScraper image tag\nAirflow instance\nMetro instance\n\n\n\n\nmain\nhttps://la-metro-dashboard-heroku.datamade.us/home\nhttps://la-metro-councilmatic-staging.herokuapp.com/\n\n\ndeploy\nhttps://la-metro-dashboard-heroku-prod.datamade.us/home\nhttps://boardagendas.metro.net\n\n\n\nSee Deployment for more on how scraper image tags are built."
-  },
-  {
-    "objectID": "index.html#what-do-they-depend-on",
-    "href": "index.html#what-do-they-depend-on",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "What do they depend on?",
-    "text": "What do they depend on?\nThe scrapers have a couple of key dependencies.\n\npupa is the framework for scraping and organizing data according to the Open Civic Data standard. Our scrapers are subclasses of pupa.Scraper, and we use the pupa CLI to run scrapes.\n\nSee Useful pupa commands for more on the CLI.\n\npython-legistar-scraper is a Python wrapper for InSite and the Legistar API that we use to retrieve data. Our scrapers are also subclasses of the relevant LegistarScraper subclasses from this library."
+    "objectID": "scrapers/bills.html#key-issues",
+    "href": "scrapers/bills.html#key-issues",
+    "title": "Bill Scraper",
+    "section": "Key issues",
+    "text": "Key issues\n\nBoard reports are added to the Legistar API before they are published to InSite. We need to determine which are “private” in order to suppress them in Councilmatic.\n\nWhy do we need to scrape private bills?\nLimit private scrape\n\nOur windowed scrapes rely on timestamps from the Legistar API, however the timestamps are not always updated when changes are made.\n\nMetro scraper did not scrape EventAgendaStatusName\nMetro: Scrape matters updated within a window, as well as matters related to events updated within a window",
+    "crumbs": [
+      "Scrapers",
+      "Bill Scraper"
+    ]
   },
   {
     "objectID": "debugging.html",
@@ -132,48 +132,6 @@
     ]
   },
   {
-    "objectID": "deployment.html",
-    "href": "deployment.html",
-    "title": "Deployment",
-    "section": "",
-    "text": "We deploy the scrapers as tagged Docker images. Tagged images are built automatically and published to the GitHub Container Registry by the publish_image.yml workflow.\nDeployment can be summarized as follows:",
-    "crumbs": [
-      "Deployment"
-    ]
-  },
-  {
-    "objectID": "deployment.html#when-should-i-deploy-the-scrapers",
-    "href": "deployment.html#when-should-i-deploy-the-scrapers",
-    "title": "Deployment",
-    "section": "When should I deploy the scrapers?",
-    "text": "When should I deploy the scrapers?\nA main tag will be built automatically when a pull request is merged.\n\n\n\n\n\n\nCaution\n\n\n\nIf you have made a significant change to a scraper, it is recommended that you run that scrape on the staging Airflow instance before deploying the change to the production Airflow instance.\n\n\nA deploy tag will be built on pushes to the deploy branch. Once you are ready to deploy your change to production, run:\ngit push origin main:deploy\n\nA note on dependencies\nWe install our pupa and legistar dependencies from the master branch of their respective repositories, i.e., pip will not automatically recognize changes to these libraries.\n\n\n\n\n\n\nWarning\n\n\n\nIf you have made a change to pupa or legistar, you must rebuild the scraper images to deploy it.\n\n\nTo rebuild the scraper images without making a change to the scraper code, check out the main branch, then run:\ngit commit --allow-empty -m \"Rebuild scrapers\"\ngit push origin main && git push origin main:deploy",
-    "crumbs": [
-      "Deployment"
-    ]
-  },
-  {
-    "objectID": "scrapers/bills.html",
-    "href": "scrapers/bills.html",
-    "title": "Bill Scraper",
-    "section": "",
-    "text": "Located in lametro/bills.py\nCreates board reports and their associated attachments, sponsorships, votes, relations, and topics",
-    "crumbs": [
-      "Scrapers",
-      "Bill Scraper"
-    ]
-  },
-  {
-    "objectID": "scrapers/bills.html#key-issues",
-    "href": "scrapers/bills.html#key-issues",
-    "title": "Bill Scraper",
-    "section": "Key issues",
-    "text": "Key issues\n\nBoard reports are added to the Legistar API before they are published to InSite. We need to determine which are “private” in order to suppress them in Councilmatic.\n\nWhy do we need to scrape private bills?\nLimit private scrape\n\nOur windowed scrapes rely on timestamps from the Legistar API, however the timestamps are not always updated when changes are made.\n\nMetro scraper did not scrape EventAgendaStatusName\nMetro: Scrape matters updated within a window, as well as matters related to events updated within a window",
-    "crumbs": [
-      "Scrapers",
-      "Bill Scraper"
-    ]
-  },
-  {
     "objectID": "scrapers/jurisdiction.html",
     "href": "scrapers/jurisdiction.html",
     "title": "Jurisdiction Scraper",
@@ -193,6 +151,48 @@
     "crumbs": [
       "Scrapers",
       "Jurisdiction Scraper"
+    ]
+  },
+  {
+    "objectID": "scrapers/people.html",
+    "href": "scrapers/people.html",
+    "title": "Board Member and Legislative Body Scrapers",
+    "section": "",
+    "text": "Located in lametro/people.py\nCreates the board and its committees (or, bodies of type “Committee” or “Independent Taxpayer Oversight Committee”)\nCreates members of the above bodies and membership objects for each of their terms",
+    "crumbs": [
+      "Scrapers",
+      "Board Member and Legislative Body Scrapers"
+    ]
+  },
+  {
+    "objectID": "scrapers/people.html#key-issues",
+    "href": "scrapers/people.html#key-issues",
+    "title": "Board Member and Legislative Body Scrapers",
+    "section": "Key issues",
+    "text": "Key issues\n\nMemberships are tricky! Sometimes, they are updated in ways that don’t resolve correctly, introducing duplicates. Other times, they are deleted from Legistar, which is a challenge for us to detect.\n\nConsider start date in addition to, or instead of, end date when importing memberships\nCommittees: Old Committee members showing\nFind a mechanism to handle data deleted from the source system",
+    "crumbs": [
+      "Scrapers",
+      "Board Member and Legislative Body Scrapers"
+    ]
+  },
+  {
+    "objectID": "deployment.html",
+    "href": "deployment.html",
+    "title": "Deployment",
+    "section": "",
+    "text": "We deploy the scrapers as tagged Docker images. Tagged images are built automatically and published to the GitHub Container Registry by the publish_image.yml workflow.\nDeployment can be summarized as follows:",
+    "crumbs": [
+      "Deployment"
+    ]
+  },
+  {
+    "objectID": "deployment.html#when-should-i-deploy-the-scrapers",
+    "href": "deployment.html#when-should-i-deploy-the-scrapers",
+    "title": "Deployment",
+    "section": "When should I deploy the scrapers?",
+    "text": "When should I deploy the scrapers?\nA main tag will be built automatically when a pull request is merged.\n\n\n\n\n\n\nCaution\n\n\n\nIf you have made a significant change to a scraper, it is recommended that you run that scrape on the staging Airflow instance before deploying the change to the production Airflow instance.\n\n\nA deploy tag will be built on pushes to the deploy branch. Once you are ready to deploy your change to production, run:\ngit push origin main:deploy\n\nA note on dependencies\nWe install our pupa and legistar dependencies from the master branch of their respective repositories, i.e., pip will not automatically recognize changes to these libraries.\n\n\n\n\n\n\nWarning\n\n\n\nIf you have made a change to pupa or legistar, you must rebuild the scraper images to deploy it.\n\n\nTo rebuild the scraper images without making a change to the scraper code, check out the main branch, then run:\ngit commit --allow-empty -m \"Rebuild scrapers\"\ngit push origin main && git push origin main:deploy",
+    "crumbs": [
+      "Deployment"
     ]
   }
 ]
