@@ -1,0 +1,22 @@
+---
+title: "Event Scraper"
+order: 4
+---
+
+- Located in `lametro/events.py`
+- Creates events
+
+## Key issues
+
+- Metro streams audio in both English and Spanish. They cannot associated multiple
+broadcast link with one event in Legistar, so they create two nearly identical events that
+we merge during scrapes.
+  - [Import and display the Spanish language audio](https://github.com/Metro-Records/la-metro-councilmatic/issues/263)
+  - ["Ver en español" link not visible](https://github.com/Metro-Records/la-metro-councilmatic/issues/393)
+- The board approves minutes for their previous meeting each time they meet. Sometimes,
+these minutes are explicitly associated with the event. When they aren't, we try to guess
+the approved minutes file.
+  - [Find approved minutes](https://github.com/opencivicdata/scrapers-us-municipal/pull/291)
+  - [Upgrades to the LA Metro scraper](https://github.com/opencivicdata/scrapers-us-municipal/pull/299)
+  - [Event scrape: If there is more than one minutes file, which one should we use?](https://github.com/Metro-Records/la-metro-councilmatic/issues/742)
+  - [Account for multiple meeting minutes](https://github.com/Metro-Records/scrapers-lametro/issues/16)

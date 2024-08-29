@@ -1,0 +1,134 @@
+---
+title: "Local development"
+order: 2
+---
+
+## Running the scrapers
+
+The scrapers are bundled with a `docker-compose.yml` file that will allow
+you to run them on your machine.
+
+To scrape all recently updated data, run:
+
+```bash
+docker compose run --rm scrapers
+```
+
+To run a particular scrape or pass arguments to `pupa`, append your command
+to the end of the previous command, like:
+
+```bash
+# Scrape board reports from the last week
+docker compose run --rm scrapers pupa update lametro bills window=7
+```
+
+### Populate a local Councilmatic instance
+
+If you'd like to scrape data into a Councilmatic instance for easy viewing, first
+run your local instance of LA Metro Councilmatic as normal. 
+
+Then, in your local scraper repository, run your scrapes using the `docker-compose.councilmatic.yml` file:
+
+```bash
+docker compose -f docker-compose.councilmatic.yml run --rm scrapers
+```
+
+### Useful pupa commands
+
+#### pupa update
+
+```bash
+usage: pupa update [-h] [--scrape] [--import] [--nonstrict] [--fastmode] [--datadir SCRAPED_DATA_DIR] [--cachedir CACHE_DIR]
+                   [-r SCRAPELIB_RPM] [--timeout SCRAPELIB_TIMEOUT] [--no-verify] [--retries SCRAPELIB_RETRIES]
+                   [--retry_wait SCRAPELIB_RETRY_WAIT_SECONDS]
+                   module
+
+update pupa data
+
+positional arguments:
+  module                path to scraper module
+
+options:
+  -h, --help            show this help message and exit
+  --scrape              only run scrape post-scrape step
+  --import              only run import post-scrape step
+  --nonstrict           skip validation on save
+  --fastmode            use cache and turn off throttling
+  --datadir SCRAPED_DATA_DIR
+                        data directory
+  --cachedir CACHE_DIR  cache directory
+  -r SCRAPELIB_RPM, --rpm SCRAPELIB_RPM
+                        scraper rpm
+  --timeout SCRAPELIB_TIMEOUT
+                        scraper timeout
+  --no-verify           skip tls verification
+  --retries SCRAPELIB_RETRIES
+                        scraper retries
+  --retry_wait SCRAPELIB_RETRY_WAIT_SECONDS
+                        scraper retry wait
+```
+
+::: {.callout-tip}
+Running a scrape with `--fastmode` will disable request throttling, resulting
+in a faster scrape. Great for local development, especially for narrow scrapes,
+e.g.,
+
+```bash
+pupa update --fastmode lametro events window=1
+```
+:::
+
+##### Additional arguments
+
+- `bills`
+  - `window` (default: 28) - How far back to scrape, in days. Scrapes all matters,
+  if 0.
+  - `matter_ids` (default: None) - Comma-separated list of MatterIds from the
+  Legistar API. Scrapes all matters updated within window, if None.
+- `events`
+  - `window` (default: None) - How far back to scrape, in days.
+
+##### Examples
+
+```bash
+# Scrape board reports from the past week
+pupa update lametro bills window=7
+
+# Scrape specific board reports
+pupa update lametro bills matter_ids=10340,10084
+
+# Scrape events from past 30 days
+pupa update lametro events window=30
+```
+
+#### pupa clean
+
+```bash
+usage: pupa clean [-h] [--window WINDOW] [--max MAX] [--report] [--yes]
+
+Removes database objects that haven't been seen in recent scrapes
+
+options:
+  -h, --help       show this help message and exit
+  --window WINDOW  objects not seen in this many days will be deleted from the database
+  --max MAX        max number of objects to delete without triggering failsafe
+  --report         generate a report of what objects this command would delete without making any changes to the database
+  --yes            assumes an answer of 'yes' to all interactive prompts
+```
+
+##### Examples
+
+```bash
+# Log which objects will be deleted without making changes to the database
+pupa clean --report
+
+# Remove objects that haven't been seen for 30 days
+pupa clean --window 30
+
+# Remove a maximum of 100 objects
+pupa clean --max 100
+```
+
+## Writing tests
+
+tktktk

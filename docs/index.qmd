@@ -1,0 +1,41 @@
+---
+title: "LA Metro Scrapers Documentation"
+---
+
+Welcome to the documentation for the LA Metro Scrapers! Here, you'll find
+information about local development, deployment, and an overview of each
+scraper (and decisions that we've made about them).
+
+## How do they work?
+
+At a high level, the scrapers retrieve information from Metro instances of
+[the Legistar interface, also known as InSite](https://metro.legistar.com/Legislation.aspx),
+and [the Legistar API](https://webapi.legistar.com/) (endpoints at `https://webapi.legistar.com/metro/*`).
+
+See the relevant scraper documentation for more information about where information
+comes from, and how it is parsed.
+
+## How are they run?
+
+The scrapers are run by Airflow and populate LA Metro Councilmatic instances,
+outlined below.
+
+| Scraper image tag | Airflow instance | Metro instance |
+| - | - | - |
+| `main` | [https://la-metro-dashboard-heroku.datamade.us/home](https://la-metro-dashboard-heroku.datamade.us/home) | [https://la-metro-councilmatic-staging.herokuapp.com/](https://la-metro-councilmatic-staging.herokuapp.com/) |
+| `deploy` | [https://la-metro-dashboard-heroku-prod.datamade.us/home](https://la-metro-dashboard-heroku-prod.datamade.us/home) | [https://boardagendas.metro.net](https://boardagendas.metro.net) |
+
+See [Deployment](deployment.qmd) for more on how scraper image tags are built.
+
+## What do they depend on?
+
+The scrapers have a couple of key dependencies.
+
+- [`pupa`](https://github.com/opencivicdata/pupa) is the framework for scraping and
+organizing data according to the Open Civic Data standard. Our scrapers are subclasses of
+`pupa.Scraper`, and we use the `pupa` CLI to run scrapes.
+  - See [Useful pupa commands](http://localhost:3821/local-development.html#useful-pupa-commands)
+  for more on the CLI.
+- [`python-legistar-scraper`](https://github.com/opencivicdata/python-legistar-scraper/) is
+a Python wrapper for InSite and the Legistar API that we use to retrieve data. Our scrapers
+are also subclasses of the relevant `LegistarScraper` subclasses from this library.

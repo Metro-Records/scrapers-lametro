@@ -1,0 +1,18 @@
+---
+title: "Jurisdiction Scraper"
+order: 1
+---
+
+- Located in `lametro/__init__.py`
+- Creates jurisdiction, organization, and posts
+  - Specifically, creates organizations that are not coded as the board itself or a committee
+  in the Legistar API, as bodies meeting these parameters are created in the people scraper
+- Creates legislative sessions
+
+## Key issues
+
+- [Summary of divisions and posts](https://github.com/Metro-Records/la-metro-councilmatic/issues/1025#issuecomment-1761681420)
+- Legislative sessions must be added manually every June. The scraper breaks if they are not
+added before legislation is created in the new session.
+  - [Write a self-sufficient method for detecting LA Metro legislative session](https://github.com/opencivicdata/scrapers-us-municipal/issues/161)
+  - [Update legislative session automatically](https://github.com/Metro-Records/scrapers-lametro/issues/22)

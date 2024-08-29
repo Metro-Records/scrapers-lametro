@@ -1,0 +1,19 @@
+---
+title: "Bill Scraper"
+order: 3
+---
+
+- Located in `lametro/bills.py`
+- Creates board reports and their associated attachments, sponsorships, votes, 
+relations, and topics
+
+## Key issues
+
+- Board reports are added to the Legistar API before they are published to InSite. We
+need to determine which are "private" in order to suppress them in Councilmatic.
+  - [Why do we need to scrape private bills?](https://github.com/Metro-Records/la-metro-councilmatic/pull/394#issuecomment-461922234)
+  - [Limit private scrape](https://github.com/opencivicdata/scrapers-us-municipal/pull/262)
+- Our windowed scrapes rely on timestamps from the Legistar API, however the timestamps
+are not always updated when changes are made.
+  - [Metro scraper did not scrape EventAgendaStatusName](https://github.com/opencivicdata/scrapers-us-municipal/issues/239)
+  - [Metro: Scrape matters updated within a window, as well as matters related to events updated within a window](https://github.com/opencivicdata/scrapers-us-municipal/pull/344)

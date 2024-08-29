@@ -1,0 +1,224 @@
+---
+title: "Debugging"
+order: 1
+---
+
+# Debugging data issues
+
+### DON'T PANIC!
+
+Many issues can arise in the Metro galaxy, from the shallowest part of the frontend to the deepest depths of the backend. However, these issues generally fall into [two broad categories](#categories-of-failure):
+
+- [Data is missing](#data-is-missing)
+- [Data is incorrect](#data-is-incorrect)
+- Appendices
+    - [More on Airflow](#more-on-airflow)
+    - [View an entity in the Councilmatic database](#view-an-entity-in-the-councilmatic-database)
+    - [Inspect the scraper logs](#inspect-the-scraper-logs)
+
+## Categories of failure
+
+This section expounds on common culprits in our three categories of failure: missing data, incorrect data, and issues with metadata. The culprits are ordered from most to least likely, therefore we suggest moving through the category relevant to your problem in order until you identify the issue.
+
+### Data is missing
+
+#### Scrape failures
+
+Our scrapers are brittle by design, i.e., they will generally fail if they try to ingest data that is formatted incorrectly. If there has been a scrape failure, there should be a corresponding exception in [the `scrapers-lametro` project in Sentry](https://datamade.sentry.io/projects/scrapers-lametro/?project=4504447849201664).
+
+Common exceptions include `OperationalError`, which indicates that something went awry with the server (e.g., not enough disk space) and `ScraperError`, which indicates a particular issue with the one of the scrapers.
+
+If you don't see an issue in Sentry, but you have reason to believe there was an error (or that our integration with Sentry is faulty), you can [follow our documentation for finding errors in the scraper logs](#inspect-the-scraper-logs).
+
+If there is not an error in Sentry or in the scraper logs, then the scrape ran. 
+
+#### Inaccurate timestamps in the Legistar API
+
+If scrapes are running, by far the most common source of issues is the scraper failing to capture changes to a bill or event. The root issue is that we rely on timestamps that should indicate an update to determine which bills and events to scrape. In reality, these timestamps do not always update when a change is made to an event or bill in Legistar. We have a couple of strategies to get around this:
+
+1. During [the Friday support window](https://github.com/datamade/la-metro-dashboard/blob/ac416e5e03f6a97fb9b0c6112093c679cefb0d1c/dags/constants.py#L41-L59), we scrape all events and bills at the top of every hour.
+2. When we run windowed scrapes, we scrape all events and bills with timestamps within _or after_ the given window. This is because upcoming events and bills are the ones that are most likely to change. For example, a scrape with a one-hour window will scrape any events that have changed in the past hour, plus any events with a future start date. Here is [a complete list of the timestamps we consider](https://docs.google.com/document/d/1LjZ61g4s-eiP-aWo4GVoOv27SF7iZ8npLV6Gg9b_BsI/edit?usp=sharing) when scraping events and bills.
+
+Taken together, these strategies _should_ ensure that any change appears on the Metro site within an hour of being made, however edge cases can happen!
+
+To determine whether timestamps are causing the problem, follow [our documentation for viewing an entity](#view-an-entity-in-the-councilmatic-database) to ascertain when an entity was last updated in the Councilmatic database and compare it to [the timestamps we consider](https://docs.google.com/document/d/1LjZ61g4s-eiP-aWo4GVoOv27SF7iZ8npLV6Gg9b_BsI/edit?usp=sharing) in windowed scrapes. If the entity has not been updated in Councilmatic since the latest timestamp in the Legistar API, trigger a broader scrape.
+
+#### Deeper problems
+
+If the scrapes and ETL pipeline are running as expected, but data is missing, then there is a deeper issue. A good first question: What are the most recent changes in the scraper codebase? Could this have caused unusual behavior?
+
+The scrapers work through the cooperation of several repos, and the bug fix may require investigating one or more of these repos.
+
+- [`Metro-Records/scrapers-lametro`](https://github.com/Metro-Records/scrapers-lametro) contains Metro-specific code for the `Bill`, `Event`, and `Person` scrapers. If you need to patch the scraper code, create a PR against this repo.
+- [`Metro-Records/la-metro-dashboard`](https://github.com/Metro-Records/la-metro-dashboard) is the Airflow app that schedules scrapes and the scripts that define them. If you need to change the scheduling of scrapes, create a PR against this repo.
+- [`opencivicdata/python-legistar-scraper/tree/master/legistar`](https://github.com/opencivicdata/python-legistar-scraper/tree/master/legistar) contains the `LegistarScraper` and `LegistarAPIScraper` variants, from which the Metro scrapers inherit. If you need to patch the Legistar scraping code, create a PR against this repo.
+- All scrapers depend on [the `pupa` framework](https://github.com/opencivicdata/pupa) for scraping and importing data using the OCD standard. In the unlikely event that you need to patch `pupa`, create a fork, then submit a PR against this repo.
+
+### Data is incorrect
+
+#### Legistar contains the wrong data
+
+Data issues can occur when the Legistar API or web interface displays the wrong information. This generally happens with Metro staff enters information that is incorrect.
+
+If Metro reports that data is incorrect, follow [our documentation for viewing an entity](#view-an-entity-in-the-councilmatic-database) to inspect the problematic object and view its sources in the Legistar API. If the erroneous data matches the API sources, report the error the Metro and wait for them to resolve the issue.
+
+#### Metro has deleted data from Legistar
+
+`pupa`, our scraping framework, [doesn't know how to identify information that has been deleted](https://github.com/opencivicdata/pupa/issues/295). Sometimes, we scrape information that Metro later removes. 
+
+If this happens for a bill, event, or membership, shell into the server and remove the erroneous entity through
+the ORM. N.b., it's easiest to get at this through the relevant person, e.g.,
+
+```python
+from lametro.models import *
+LAMetroPerson.objects.get(family_name='Mitchell')
+<LAMetroPerson: Holly Mitchell>
+LAMetroPerson.objects.get(family_name='Mitchell').memberships.filter(organization__name__endswith='Committee')
+<QuerySet [<Membership: Holly Mitchell in Operations, Safety, and Customer Experience Committee (Member)>, <Membership: Holly Mitchell in Finance, Budget and Audit Committee (Member)>]>
+LAMetroPerson.objects.get(family_name='Mitchell').memberships.filter(organization__name__endswith='Committee').count()
+2
+LAMetroPerson.objects.get(family_name='Mitchell').memberships.filter(organization__name__endswith='Committee').delete()
+(2, {'lametro.Membership': 2})
+```
+
+#### Deeper issues
+
+Sometimes, there is not a problem with the data, but rather there is an error in how it is displayed in the Metro Councilmatic instance. This class of issues is generally very rare. As with deeper issues with the scrapers, a helpful first question is: What are the most recent changes, and could they be the source of the problem you're seeing?
+
+Base models and view logic are defined in [django-councilmatic](https://github.com/datamade/django-councilmatic/tree/2.5). Metro generally uses the most recent release of the 2.5.x series, so be sure you're consulting the `2.5` branch of `django-councilmatic` when you start spelunking.
+
+Metro makes a number of customizations to the models and view logic in this repository. Consult [the most recent release](https://github.com/datamade/la-metro-councilmatic/releases) to view the code that's deployed to production.
+
+## Inspecting data and logs
+
+### More on Airflow
+
+The Metro data pipeline, both scrapes and management commands to perform subsequent ETL, are scheduled and run by our Metro Airflow instance, located at [https://la-metro-dashboard-heroku-prod.datamade.us](https://la-metro-dashboard-heroku-prod.datamade.us). Consult the DataMade BitWarden for login credentials. (Search `metro-support@datamade.us` in our shared folder!)
+
+The dashboard lives on GitHub, [here](https://github.com/Metro-Records/la-metro-dashboard).
+
+Apache maintains thorough documentation of [core concepts](http://airflow.apache.org/docs/stable/concepts.html), as well as [navigating the UI](http://airflow.apache.org/docs/stable/ui.html). If you've never used Airflow before, these are great resources to start with!
+
+### Get links to source data from Legistar
+
+If there is an issue with a particular entity, view that entity's detail page on the board
+agendas site ([https://boardagendas.metro.net](https://boardagendas.metro.net)). Links to source data from Legistar will be logged to your browser's developer console.
+
+### View an entity in the Councilmatic database
+
+#### Retrieve the entity in the Django shell
+
+Shell into a running instance of LA Metro Councilmatic using either the Heroku CLI:
+
+```bash
+heroku login
+heroku ps:exec --app=lametro-councilmatic-production
+```
+
+or Heroku's web-based console:
+
+<img width="717" alt="Screenshot 2024-08-06 at 1 34 59 PM" src="https://github.com/user-attachments/assets/5ba3ff96-0b26-4447-9683-5d59521ec9b7">
+
+with `python manage.py shell`.
+
+Retrieve the problematic entity using its slug, which you can retrieve from the URL of
+its detail page.
+
+```python
+# In the Django shell
+>>> from lametro.models import *
+>>> entity = LAMetroEvent.objects.get(slug='regular-board-meeting-036b08c9a3f3')
+```
+
+You can use the same ORM query to retrieve any entity. Simply swap out `LAMetroEvent` for the correct model and, of course, update the OCD ID.
+
+| Entity | Model |
+| -- | -- |
+| Person | LAMetroPerson |
+| Committee | LAMetroOrganization |
+| Bill | LAMetroBill |
+| Event | LAMetroEvent |
+
+#### View useful information
+
+Assuming you have retrieved the entity as illustrated in the previous step, you can view its last updated date like this:
+
+```python
+>>> entity.updated_at
+datetime.datetime(2020, 3, 25, 0, 47, 3, 471572, tzinfo=<UTC>)
+```
+
+You can also view its sources like this:
+
+```python
+>>> import pprint
+>>> pprint.pprint([(source.note, source.url) for source in entity.sources.all()])
+[('api', 'http://webapi.legistar.com/v1/metro/events/1384'),
+ ('api (sap)', 'http://webapi.legistar.com/v1/metro/events/1493'),
+ ('web',
+  'https://metro.legistar.com/MeetingDetail.aspx?LEGID=1384&GID=557&G=A5FAA737-A54D-4A6C-B1E8-FF70F765FA94'),
+ ('web (sap)',
+  'https://metro.legistar.com/MeetingDetail.aspx?LEGID=1493&GID=557&G=A5FAA737-A54D-4A6C-B1E8-FF70F765FA94')]
+```
+
+Events have Spanish language sources (e.g., "api (sap)"), as well. In initial debugging, focus on the "api" and "web" sources – by visiting these links and checking that the data in Legistar appears as expected.
+
+### Inspect the scraper logs
+
+::: {.callout-warning}
+The timestamps in the scraper logs are in Chicago local time!
+:::
+
+If you have reason to believe the scrape has failed, but you don't see an exception in Sentry, you can make double sure by consulting the logs for the scraping DAGs [in the dashboard](https://la-metro-dashboard-heroku-prod.datamade.us).
+
+#### Confirming the scrape ran
+
+To confirm the scrape ran, click the name of a DAG to pull up the tree view, which will display the status of the last 25 DAG runs.
+
+![windowed_bill_scraping DAG tree view](https://i.imgur.com/9NDdEpy.png)
+
+Note that the scraping DAGs employ [branch operators](https://airflow.apache.org/docs/stable/concepts.html?highlight=branch#branching) to determine what kind of scraping task to run. Be sure to look closely to verify that the task you're expecting is green (succeeded), not pink (skipped).
+
+#### Verifying whether an error occurred
+
+The dashboard has DAGs corresponding to the full overnight scrape, windowed scrapes, fast full scrapes, and hourly processing. To view the logs associated with tasks in a particular DAG, click the name of the DAG to go to the Tree View, which shows you the last 24 runs of the DAG. Then, click the box associated with the task for which you'd like the view the logs. This will pop open a window containing, among other things, a link to the logs. Click the link to view the logs!
+
+![View the logs for the most recent `convert_attachment_text` run](https://i.imgur.com/MSTc4O0.gif)
+
+If there has been an error, the logs for the implicated task should contain something like this:
+
+```
+import memberships...
+Traceback (most recent call last):
+  File "/home/datamade/.virtualenvs/opencivicdata/bin/pupa", line 8, in <module>
+    sys.exit(main())
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/__main__.py", line 68, in main
+    subcommands[args.subcommand].handle(args, other)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/commands/update.py", line 278, in handle
+    return self.do_handle(args, other, juris)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/commands/update.py", line 329, in do_handle
+    report['import'] = self.do_import(juris, args)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/cli/commands/update.py", line 216, in do_import
+    report.update(membership_importer.import_directory(datadir))
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/base.py", line 197, in import_directory
+    return self.import_data(json_stream())
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/base.py", line 234, in import_data
+    obj_id, what = self.import_item(data)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/base.py", line 258, in import_item
+    obj = self.get_object(data)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/pupa/importers/memberships.py", line 36, in get_object
+    return self.model_class.objects.get(**spec)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/django/db/models/manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/datamade/.virtualenvs/opencivicdata/lib/python3.5/site-packages/django/db/models/query.py", line 412, in get
+    (self.model._meta.object_name, num)
+opencivicdata.core.models.people_orgs.MultipleObjectsReturned: get() returned more than one Membership -- it returned 2!
+Sentry is attempting to send 1 pending error messages
+Waiting up to 10 seconds
+Press Ctrl-C to quit
+05/02/2020 00:40:09 INFO pupa: save jurisdiction New York City as jurisdiction_ocd-jurisdiction-country:us-state:ny-place:new_york-government.json
+05/02/2020 00:40:09 INFO pupa: save organization New York City Council as organization_62bd3c8a-8c37-11ea-b678-122a3d729da3.json
+05/02/2020 00:40:09 INFO pupa: save post District 1 as post_62bdb9c6-8c37-11ea-b678-122a3d729da3.json
+```
+
+The timestamps at the bottom correspond to the scrape _after_ the error occurred, so you can use them to determine when the broken scrape occurred and whether it's relevant to the missing data.

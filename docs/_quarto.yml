@@ -1,0 +1,27 @@
+project:
+  type: website
+
+website:
+  title: "LA Metro Scrapers Documentation"
+  sidebar:
+    style: "docked"
+    search: true
+    contents: auto
+    tools:
+      - icon: github
+        menu:
+          - text: Source Code
+            href: https://github.com/Metro-Records/scrapers-lametro
+          - text: Issue Tracker
+            href: https://github.com/Metro-Records/scrapers-lametro/issues
+          - text: Legacy Issue Tracker
+            href: https://github.com/opencivicdata/scrapers-us-municipal/issues?q=is%3Aissue+metro
+
+format:
+  html:
+    theme: litera
+    css: styles.css
+    toc: true
+
+
+

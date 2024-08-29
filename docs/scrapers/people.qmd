@@ -1,0 +1,19 @@
+---
+title: "Board Member and Legislative Body Scrapers"
+order: 2
+---
+
+- Located in `lametro/people.py`
+- Creates the board and its committees (or, bodies of type "Committee" or 
+"Independent Taxpayer Oversight Committee")
+- Creates members of the above bodies and membership objects for each of
+their terms 
+
+## Key issues
+
+- Memberships are tricky! Sometimes, they are updated in ways that don't resolve correctly,
+introducing duplicates. Other times, they are deleted from Legistar, which is a challenge for
+us to detect.
+  - [Consider start date in addition to, or instead of, end date when importing memberships](https://github.com/opencivicdata/pupa/issues/303)
+  - [Committees: Old Committee members showing](https://github.com/Metro-Records/la-metro-councilmatic/issues/746)
+  - [Find a mechanism to handle data deleted from the source system](https://github.com/opencivicdata/pupa/issues/295)
