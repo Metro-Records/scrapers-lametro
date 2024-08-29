@@ -17,3 +17,6 @@ Make your changes to the `.qmd` files in the `docs/` directory. They will be aut
 reflected in your local version of the docs.
 
 For more on authoring docs with Quarto, see [their Getting Started guide](https://quarto.org/docs/get-started/authoring/text-editor.html) and [documentation](https://quarto.org/docs/guide/).
+
+The GitHub Pages site will rebuild automatically when your documentation changes are
+merged into `main`.
