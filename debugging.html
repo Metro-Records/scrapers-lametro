@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.57">
+<meta name="generator" content="quarto-1.5.54">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -297,7 +297,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="anchored" data-anchor-id="inaccurate-timestamps-in-the-legistar-api">Inaccurate timestamps in the Legistar API</h4>
 <p>If scrapes are running, by far the most common source of issues is the scraper failing to capture changes to a bill or event. The root issue is that we rely on timestamps that should indicate an update to determine which bills and events to scrape. In reality, these timestamps do not always update when a change is made to an event or bill in Legistar. We have a couple of strategies to get around this:</p>
 <ol type="1">
-<li>During <a href="https://github.com/datamade/la-metro-dashboard/blob/ac416e5e03f6a97fb9b0c6112093c679cefb0d1c/dags/constants.py#L41-L59">the Friday support window</a>, we scrape all events and bills at the top of every hour.</li>
+<li>Generally, Metro staff post agendas the Friday before meetings occur. Thus, <a href="https://github.com/datamade/la-metro-dashboard/blob/ac416e5e03f6a97fb9b0c6112093c679cefb0d1c/dags/constants.py#L41-L59">on Fridays</a>, we scrape all events and bills at the top of every hour.</li>
 <li>When we run windowed scrapes, we scrape all events and bills with timestamps within <em>or after</em> the given window. This is because upcoming events and bills are the ones that are most likely to change. For example, a scrape with a one-hour window will scrape any events that have changed in the past hour, plus any events with a future start date. Here is <a href="https://docs.google.com/document/d/1LjZ61g4s-eiP-aWo4GVoOv27SF7iZ8npLV6Gg9b_BsI/edit?usp=sharing">a complete list of the timestamps we consider</a> when scraping events and bills.</li>
 </ol>
 <p>Taken together, these strategies <em>should</em> ensure that any change appears on the Metro site within an hour of being made, however edge cases can happen!</p>
@@ -319,8 +319,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="data-is-incorrect">Data is incorrect</h3>
 <section id="legistar-contains-the-wrong-data" class="level4">
 <h4 class="anchored" data-anchor-id="legistar-contains-the-wrong-data">Legistar contains the wrong data</h4>
-<p>Data issues can occur when the Legistar API or web interface displays the wrong information. This generally happens with Metro staff enters information that is incorrect.</p>
-<p>If Metro reports that data is incorrect, follow <a href="#view-an-entity-in-the-councilmatic-database">our documentation for viewing an entity</a> to inspect the problematic object and view its sources in the Legistar API. If the erroneous data matches the API sources, report the error the Metro and wait for them to resolve the issue.</p>
+<p>Data issues can occur when the Legistar API or web interface displays the wrong information. This generally happens when Metro staff enters information that is incorrect or is organized differently than our scraper expects.</p>
+<p>If Metro reports that data is incorrect, follow <a href="#view-an-entity-in-the-councilmatic-database">our documentation for viewing an entity</a> to inspect the problematic object and view its sources in the Legistar API. If the erroneous data matches the API sources, report the error the Metro and wait for them to resolve the issue or clarify how to interpret the data.</p>
 </section>
 <section id="metro-has-deleted-data-from-legistar" class="level4">
 <h4 class="anchored" data-anchor-id="metro-has-deleted-data-from-legistar">Metro has deleted data from Legistar</h4>
@@ -440,7 +440,7 @@ Warning
 <figcaption>windowed_bill_scraping DAG tree view</figcaption>
 </figure>
 </div>
-<p>Note that the scraping DAGs employ <a href="https://airflow.apache.org/docs/stable/concepts.html?highlight=branch#branching">branch operators</a> to determine what kind of scraping task to run. Be sure to look closely to verify that the task you’re expecting is green (succeeded), not pink (skipped).</p>
+<p>Note that the scraping DAGs employ <a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html#concepts-branching">branch operators</a> to determine what kind of scraping task to run. Be sure to look closely to verify that the task you’re expecting is green (succeeded), not pink (skipped).</p>
 </section>
 <section id="verifying-whether-an-error-occurred" class="level4">
 <h4 class="anchored" data-anchor-id="verifying-whether-an-error-occurred">Verifying whether an error occurred</h4>

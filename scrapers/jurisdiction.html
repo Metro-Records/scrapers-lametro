@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.57">
+<meta name="generator" content="quarto-1.5.54">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -190,7 +190,14 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#key-issues" id="toc-key-issues" class="nav-link active" data-scroll-target="#key-issues">Key issues</a></li>
+  <li><a href="#core-concepts" id="toc-core-concepts" class="nav-link active" data-scroll-target="#core-concepts">Core concepts</a>
+  <ul class="collapse">
+  <li><a href="#division" id="toc-division" class="nav-link" data-scroll-target="#division">Division</a></li>
+  <li><a href="#jurisdiction" id="toc-jurisdiction" class="nav-link" data-scroll-target="#jurisdiction">Jurisdiction</a></li>
+  <li><a href="#post" id="toc-post" class="nav-link" data-scroll-target="#post">Post</a></li>
+  <li><a href="#membership" id="toc-membership" class="nav-link" data-scroll-target="#membership">Membership</a></li>
+  </ul></li>
+  <li><a href="#key-issues" id="toc-key-issues" class="nav-link" data-scroll-target="#key-issues">Key issues</a></li>
   </ul>
 </nav>
     </div>
@@ -224,10 +231,59 @@ ul.task-list li input[type="checkbox"] {
 </ul></li>
 <li>Creates legislative sessions</li>
 </ul>
+<section id="core-concepts" class="level2">
+<h2 class="anchored" data-anchor-id="core-concepts">Core concepts</h2>
+<section id="division" class="level3">
+<h3 class="anchored" data-anchor-id="division">Division</h3>
+<ul>
+<li>Political geography</li>
+<li>“Jurisdictions exist within a division, while Posts can represent a division”</li>
+<li>Divisions relevant to LA Metro:
+<ul>
+<li>City of Los Angeles</li>
+<li><a href="https://experience.arcgis.com/experience/159e4b53494e47fe82bacd8016065843">Los Angeles County supervisorial districts</a></li>
+<li><a href="https://boardagendas.metro.net/static/pdf/CitySelectionCommitte-MTA-Rules-and-Regulations.pdf">Statutorially defined transit sectors</a></li>
+<li><a href="https://dot.ca.gov/caltrans-near-me/district-7">Caltrans (Calfornia Department of Transportation) District</a></li>
+</ul></li>
+<li>Further reading: <a href="https://open-civic-data.readthedocs.io/en/latest/proposals/0002.html">https://open-civic-data.readthedocs.io/en/latest/proposals/0002.html</a></li>
+</ul>
+</section>
+<section id="jurisdiction" class="level3">
+<h3 class="anchored" data-anchor-id="jurisdiction">Jurisdiction</h3>
+<ul>
+<li>Logical unit of governance</li>
+<li>Example: LA Metro</li>
+<li>Further reading: <a href="https://open-civic-data.readthedocs.io/en/latest/proposals/0003.html">https://open-civic-data.readthedocs.io/en/latest/proposals/0003.html</a></li>
+</ul>
+</section>
+<section id="post" class="level3">
+<h3 class="anchored" data-anchor-id="post">Post</h3>
+<ul>
+<li>Position in organization</li>
+<li>Posts define the core positions within an organization, and can optionally be associated with a Division, i.e., the political geography they represent</li>
+<li>Examples:
+<ul>
+<li>Post associated with a division: Appointee of the Mayor of the City of Los Angeles on the Board of Directors representing the City of Los Angeles</li>
+<li>Post not associated with a division: Chair of the Board of Directors</li>
+</ul></li>
+<li>Further reading: <a href="https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html">https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html</a></li>
+</ul>
+</section>
+<section id="membership" class="level3">
+<h3 class="anchored" data-anchor-id="membership">Membership</h3>
+<ul>
+<li>“A relationship between a Person and an Organization, possibly including a Post”
+<ul>
+<li>Committee Memberships are not associated with a Post because committees do not have a defined membership structure</li>
+</ul></li>
+<li>Memberships are created by the <a href="../scrapers/people.html">people scraper</a></li>
+<li>Further reading: <a href="https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html">https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html</a></li>
+</ul>
+</section>
+</section>
 <section id="key-issues" class="level2">
 <h2 class="anchored" data-anchor-id="key-issues">Key issues</h2>
 <ul>
-<li><a href="https://github.com/Metro-Records/la-metro-councilmatic/issues/1025#issuecomment-1761681420">Summary of divisions and posts</a></li>
 <li>Legislative sessions must be added manually every June. The scraper breaks if they are not added before legislation is created in the new session.
 <ul>
 <li><a href="https://github.com/opencivicdata/scrapers-us-municipal/issues/161">Write a self-sufficient method for detecting LA Metro legislative session</a></li>

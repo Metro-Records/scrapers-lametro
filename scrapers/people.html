@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.57">
+<meta name="generator" content="quarto-1.5.54">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -220,7 +220,40 @@ ul.task-list li input[type="checkbox"] {
 <li>Located in <code>lametro/people.py</code></li>
 <li>Creates the board and its committees (or, bodies of type “Committee” or “Independent Taxpayer Oversight Committee”)</li>
 <li>Creates members of the above bodies and membership objects for each of their terms</li>
+<li>Further reading: <a href="https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html">https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html</a></li>
 </ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The following terms all refer to the same thing:</p>
+<p><strong>Board of Directors, Committee</strong></p>
+<ul>
+<li>Body (Legistar API)</li>
+<li>Meeting body (Legistar UI)</li>
+<li>Organization (Open Civic Data universe, Councilmatic models)</li>
+<li>Committee (Legistar UI, Councilmatic UI)</li>
+</ul>
+<p><strong>Board member</strong></p>
+<ul>
+<li>Member (Legistar UI)</li>
+<li>Person/s (Legistar API, Open Civic Data universe, Councilmatic models)</li>
+<li>Board member (Councilmatic UI)</li>
+</ul>
+<p><strong>Membership</strong></p>
+<ul>
+<li>Office record (Legistar API)</li>
+<li>Membership (Open Civic Data models, Councilmatic models)</li>
+<li>Term (pupa)</li>
+</ul>
+</div>
+</div>
 <section id="key-issues" class="level2">
 <h2 class="anchored" data-anchor-id="key-issues">Key issues</h2>
 <ul>
