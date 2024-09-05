@@ -36,7 +36,7 @@ If there is not an error in Sentry or in the scraper logs, then the scrape ran.
 
 If scrapes are running, by far the most common source of issues is the scraper failing to capture changes to a bill or event. The root issue is that we rely on timestamps that should indicate an update to determine which bills and events to scrape. In reality, these timestamps do not always update when a change is made to an event or bill in Legistar. We have a couple of strategies to get around this:
 
-1. During [the Friday support window](https://github.com/datamade/la-metro-dashboard/blob/ac416e5e03f6a97fb9b0c6112093c679cefb0d1c/dags/constants.py#L41-L59), we scrape all events and bills at the top of every hour.
+1. Generally, Metro staff post agendas the Friday before meetings occur. Thus, [on Fridays](https://github.com/datamade/la-metro-dashboard/blob/ac416e5e03f6a97fb9b0c6112093c679cefb0d1c/dags/constants.py#L41-L59), we scrape all events and bills at the top of every hour.
 2. When we run windowed scrapes, we scrape all events and bills with timestamps within _or after_ the given window. This is because upcoming events and bills are the ones that are most likely to change. For example, a scrape with a one-hour window will scrape any events that have changed in the past hour, plus any events with a future start date. Here is [a complete list of the timestamps we consider](https://docs.google.com/document/d/1LjZ61g4s-eiP-aWo4GVoOv27SF7iZ8npLV6Gg9b_BsI/edit?usp=sharing) when scraping events and bills.
 
 Taken together, these strategies _should_ ensure that any change appears on the Metro site within an hour of being made, however edge cases can happen!
@@ -58,9 +58,9 @@ The scrapers work through the cooperation of several repos, and the bug fix may 
 
 #### Legistar contains the wrong data
 
-Data issues can occur when the Legistar API or web interface displays the wrong information. This generally happens with Metro staff enters information that is incorrect.
+Data issues can occur when the Legistar API or web interface displays the wrong information. This generally happens when Metro staff enters information that is incorrect or is organized differently than our scraper expects.
 
-If Metro reports that data is incorrect, follow [our documentation for viewing an entity](#view-an-entity-in-the-councilmatic-database) to inspect the problematic object and view its sources in the Legistar API. If the erroneous data matches the API sources, report the error the Metro and wait for them to resolve the issue.
+If Metro reports that data is incorrect, follow [our documentation for viewing an entity](#view-an-entity-in-the-councilmatic-database) to inspect the problematic object and view its sources in the Legistar API. If the erroneous data matches the API sources, report the error the Metro and wait for them to resolve the issue or clarify how to interpret the data.
 
 #### Metro has deleted data from Legistar
 
@@ -177,7 +177,7 @@ To confirm the scrape ran, click the name of a DAG to pull up the tree view, whi
 
 ![windowed_bill_scraping DAG tree view](https://i.imgur.com/9NDdEpy.png)
 
-Note that the scraping DAGs employ [branch operators](https://airflow.apache.org/docs/stable/concepts.html?highlight=branch#branching) to determine what kind of scraping task to run. Be sure to look closely to verify that the task you're expecting is green (succeeded), not pink (skipped).
+Note that the scraping DAGs employ [branch operators](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html#concepts-branching) to determine what kind of scraping task to run. Be sure to look closely to verify that the task you're expecting is green (succeeded), not pink (skipped).
 
 #### Verifying whether an error occurred
 

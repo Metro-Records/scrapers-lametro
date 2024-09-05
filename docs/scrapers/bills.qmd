@@ -6,6 +6,15 @@ order: 3
 - Located in `lametro/bills.py`
 - Creates board reports and their associated attachments, sponsorships, votes, 
 relations, and topics
+- Further reading: [https://open-civic-data.readthedocs.io/en/latest/proposals/0006.html](https://open-civic-data.readthedocs.io/en/latest/proposals/0006.html)
+
+::: {.callout-tip}
+The following terms all refer to the same thing:
+
+- Matter (Legistar API)
+- Bill (Open Civic Data universe)
+- Board report (Legistar UI, Councilmatic universe)
+:::
 
 ## Key issues
 

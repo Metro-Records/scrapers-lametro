@@ -8,6 +8,30 @@ order: 2
 "Independent Taxpayer Oversight Committee")
 - Creates members of the above bodies and membership objects for each of
 their terms 
+- Further reading: [https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html](https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html)
+
+::: {.callout-tip}
+The following terms all refer to the same thing:
+
+**Board of Directors, Committee**
+
+- Body (Legistar API)
+- Meeting body (Legistar UI)
+- Organization (Open Civic Data universe, Councilmatic models)
+- Committee (Legistar UI, Councilmatic UI)
+
+**Board member**
+
+- Member (Legistar UI)
+- Person/s (Legistar API, Open Civic Data universe, Councilmatic models)
+- Board member (Councilmatic UI)
+
+**Membership**
+
+- Office record (Legistar API)
+- Membership (Open Civic Data models, Councilmatic models)
+- Term (pupa)
+:::
 
 ## Key issues
 

@@ -6,9 +6,16 @@ order: 4
 - Located in `lametro/events.py`
 - Creates events
 
+::: {.callout-tip}
+The following terms all refer to the same thing:
+
+- Event (Legistar API, Open Civic Data universe, Councilmatic models)
+- Meeting (Legistar UI, Councilmatic UI)
+:::
+
 ## Key issues
 
-- Metro streams audio in both English and Spanish. They cannot associated multiple
+- Metro streams audio in both English and Spanish. They cannot associate multiple
 broadcast link with one event in Legistar, so they create two nearly identical events that
 we merge during scrapes.
   - [Import and display the Spanish language audio](https://github.com/Metro-Records/la-metro-councilmatic/issues/263)
