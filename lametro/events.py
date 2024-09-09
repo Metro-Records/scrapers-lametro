@@ -523,7 +523,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         )
 
         # Will print a warning if no minutes have been found
-        valid_attachments = []
+        n_minutes = 0
 
         # Sometimes, the search returns more than one board report.
         # Go through each matter yielded from this generator to account for that.
@@ -537,7 +537,8 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             if len(attachments) == 0:
                 raise ValueError("No attachments for the approved minutes matter")
             elif len(attachments) == 1:
-                valid_attachments.append(attachments)
+                yield attachments[0]
+                n_minutes += 1
             else:
                 """
                 Multiple attachments have been found.
@@ -563,12 +564,10 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                                 cover_page_text = pytesseract.image_to_string(Image.open(in_mem_image))
 
                     if "MINUTES" in cover_page_text.upper():
-                        valid_attachments.append(attach)
+                        yield attach
+                        n_minutes += 1
 
-        for item in valid_attachments:
-            yield item
-        
-        if len(valid_attachments) == 0:
+        if n_minutes == 0:
             self.warning(
                 "Couldn't find minutes for the {} meeting of {}.".format(name, date)
             )
