@@ -562,7 +562,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                                 in_mem_image.seek(0)
                                 cover_page_text = pytesseract.image_to_string(Image.open(in_mem_image))
 
-                    if "MINUTES" in cover_page_text:
+                    if "MINUTES" in cover_page_text.upper():
                         valid_attachments.append(attach)
 
         for item in valid_attachments:
