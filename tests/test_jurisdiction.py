@@ -20,4 +20,3 @@ def test_legislative_session(mocker):
     next_year = str(fake_now.year + 1)
 
     assert next_year in latest_session_date
-    breakpoint()
