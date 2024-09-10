@@ -3,6 +3,7 @@ from pupa.scrape import Jurisdiction, Organization
 from .bills import LametroBillScraper
 from .people import LametroPersonScraper
 from .events import LametroEventScraper
+from datetime import datetime
 
 
 class Lametro(Jurisdiction):
@@ -17,7 +18,14 @@ class Lametro(Jurisdiction):
     }
 
     legislative_sessions = []
-    for year in range(2014, 2025):
+
+    today = datetime.now()
+    this_year = today.year
+    allowed_years = list(range(2014, this_year))
+    if (today.month == 6 and today.day >= 23) or today.month >= 7:
+        allowed_years.append(this_year)
+
+    for year in allowed_years:
         session = {
             "identifier": "{}".format(year),
             "start_date": "{}-07-01".format(year),
