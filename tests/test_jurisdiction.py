@@ -24,9 +24,10 @@ def test_legislative_session(test_date):
     with freeze_time(test_date):
         fake_now = datetime.now()
         fake_date = fake_now.date()
+        next_year = str(fake_now.year + 1)  
 
-        latest_session_date = Lametro.get_legislative_sessions()[-1]["end_date"]
-        next_year = str(fake_now.year + 1)        
+        sessions = list(Lametro.get_legislative_sessions())
+        latest_session_date = sessions[-1]["end_date"]
 
         if fake_date < last_week_of_year:
             assert next_year not in latest_session_date

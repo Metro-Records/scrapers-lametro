@@ -19,7 +19,6 @@ class Lametro(Jurisdiction):
 
     @staticmethod
     def get_legislative_sessions():
-        sessions = []
         today = datetime.now()
         this_year = today.year
         allowed_years = list(range(2014, this_year))
@@ -33,9 +32,8 @@ class Lametro(Jurisdiction):
                 "start_date": "{}-07-01".format(year),
                 "end_date": "{}-06-30".format(year + 1),
             }
-            sessions.append(session)
+            yield session
 
-        return sessions
 
     def get_organizations(self):
         org = Organization(name="Board of Directors", classification="legislature")
