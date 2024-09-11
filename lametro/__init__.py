@@ -17,21 +17,25 @@ class Lametro(Jurisdiction):
         "events": LametroEventScraper,
     }
 
-    legislative_sessions = []
+    @staticmethod
+    def get_legislative_sessions():
+        sessions = []
+        today = datetime.now()
+        this_year = today.year
+        allowed_years = list(range(2014, this_year))
 
-    today = datetime.now()
-    this_year = today.year
-    allowed_years = list(range(2014, this_year))
-    if (today.month == 6 and today.day >= 23) or today.month >= 7:
-        allowed_years.append(this_year)
+        if (today.month == 6 and today.day >= 23) or today.month >= 7:
+            allowed_years.append(this_year)
 
-    for year in allowed_years:
-        session = {
-            "identifier": "{}".format(year),
-            "start_date": "{}-07-01".format(year),
-            "end_date": "{}-06-30".format(year + 1),
-        }
-        legislative_sessions.append(session)
+        for year in allowed_years:
+            session = {
+                "identifier": "{}".format(year),
+                "start_date": "{}-07-01".format(year),
+                "end_date": "{}-06-30".format(year + 1),
+            }
+            sessions.append(session)
+
+        return sessions
 
     def get_organizations(self):
         org = Organization(name="Board of Directors", classification="legislature")
