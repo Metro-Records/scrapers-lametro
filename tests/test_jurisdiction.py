@@ -2,21 +2,33 @@ from datetime import datetime
 
 import pytest
 from freezegun import freeze_time
+from lametro import Lametro
 
 
-@freeze_time('2024-06-23')
-def test_legislative_session(mocker):
+@pytest.mark.parametrize("test_date", [
+    '2024-06-10',
+    '2024-06-23',
+    '2024-10-01',
+    '2025-05-01',
+    '2025-06-30'
+])
+def test_legislative_session(test_date):
     '''
     Test that next fiscal year's legislative sessions are included
-    when it's the last week of the current one.
+    only when it's the last week of the current one.
     '''
-    fake_now = datetime.now()
-    mocker.patch(
-        "lametro.Lametro.today", return_value=fake_now
-    )
-    from lametro import Lametro
+    date_format = "%Y-%m-%d"
+    test_year = test_date.split('-')[0]
+    last_week_of_year = datetime.strptime(f"{test_year}-06-23", date_format).date()
 
-    latest_session_date = Lametro.legislative_sessions[-1]["end_date"]
-    next_year = str(fake_now.year + 1)
+    with freeze_time(test_date):
+        fake_now = datetime.now()
+        fake_date = fake_now.date()
 
-    assert next_year in latest_session_date
+        latest_session_date = Lametro.get_legislative_sessions()[-1]["end_date"]
+        next_year = str(fake_now.year + 1)        
+
+        if fake_date < last_week_of_year:
+            assert next_year not in latest_session_date
+        elif fake_date >= last_week_of_year:
+            assert next_year in latest_session_date
