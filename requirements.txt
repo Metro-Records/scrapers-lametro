@@ -9,3 +9,5 @@ requests-mock==1.5.2
 requests[security]
 sentry-sdk
 freezegun==1.5.1
+pdfplumber==0.11.3
+pytesseract==0.3.10
