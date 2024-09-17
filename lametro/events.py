@@ -1,7 +1,5 @@
 import datetime
 import logging
-import requests
-import io
 
 from sentry_sdk import capture_exception
 
@@ -9,9 +7,7 @@ from legistar.events import LegistarAPIEventScraper
 from pupa.scrape import Event, Scraper
 from legistar.base import LegistarScraper
 
-import pdfplumber
-import pytesseract
-from PIL import Image
+import requests
 
 try:
     from .secrets import TOKEN
@@ -409,13 +405,13 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                 )
             else:
                 approved_minutes = self.find_approved_minutes(event)
-                for minutes in approved_minutes:
+                if approved_minutes:
                     e.add_document(
-                        note=minutes["MatterAttachmentName"],
-                        url=minutes["MatterAttachmentHyperlink"],
+                        note=approved_minutes["MatterAttachmentName"],
+                        url=approved_minutes["MatterAttachmentHyperlink"],
                         media_type="application/pdf",
                         date=self.to_utc_timestamp(
-                            minutes["MatterAttachmentLastModifiedUtc"]
+                            approved_minutes["MatterAttachmentLastModifiedUtc"]
                         ).date(),
                     )
                     e.extras["approved_minutes"] = True
@@ -496,81 +492,92 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if name not in {"Board of Directors - Regular Board Meeting", "LA SAFE"}:
             return None
 
-        # if the event is in the future, there won't have been a chance to
+        # if the event is the future, there won't have been a chance to
         # approve the minutes
         if event["start"] > datetime.datetime.now(datetime.timezone.utc):
             return None
 
         date = event["start"].strftime("%B %-d, %Y")
-
-        associated_with_meeting_body = f"MatterBodyId eq {event['EventBodyId']}"
-        meeting_date_in_title = f"substringof('{date}', MatterTitle)"
-        matter_type_minutes = "MatterTypeName eq 'Minutes'"
-        minutes_in_title = "substringof('Minutes', MatterTitle)"
-        matter_type_informational = "MatterTypeName eq 'Informational Report'"
-
         result = self.search(
             "/matters/",
             "MatterId",
-            (
-                f"{associated_with_meeting_body} and " +
-                f"{meeting_date_in_title} and " +
-                "(" +
-                    f"({matter_type_minutes}) or " +
-                    f"({minutes_in_title} and {matter_type_informational})" +
-                ")"
+            "MatterBodyId eq {} and substringof('{}', MatterTitle) and substringof('Minutes', MatterTitle)".format(
+                event["EventBodyId"], date
             ),
         )
 
-        # Will print a warning if no minutes have been found
-        n_minutes = 0
-
-        # Sometimes, the search returns more than one board report.
-        # Go through each matter yielded from this generator to account for that.
-        for matter in result:
-            attachment_url = self.BASE_URL + "/matters/{}/attachments".format(
-                matter["MatterId"]
-            )
-
-            attachments = self.get(attachment_url).json()
-
-            if len(attachments) == 0:
-                raise ValueError("No attachments for the approved minutes matter")
-            elif len(attachments) == 1:
-                yield attachments[0]
-                n_minutes += 1
+        try:
+            (matter,) = result
+        except ValueError as e:
+            if "not enough values" in str(e):
+                self.warning(
+                    "Couldn't find minutes for the {} meeting of {}.".format(name, date)
+                )
+                return None
+            elif "too many values to unpack" in str(e):
+                self.warning(
+                    "Found more than one minutes file for the {} meeting of {}.".format(
+                        name, date
+                    )
+                )
+                return None
             else:
-                """
-                Multiple attachments have been found.
-                Return only those that look like minutes files.
-                """
-                for attach in attachments:
-                    url = attach["MatterAttachmentHyperlink"]
-                    response = requests.get(url)
+                raise
 
-                    with io.BytesIO(response.content) as filestream:
-                        pdf = pdfplumber.open(filestream)
-                        cover_page = pdf.pages[0]
+        attachment_url = self.BASE_URL + "/matters/{}/attachments".format(
+            matter["MatterId"]
+        )
 
-                        cover_page_text = cover_page.extract_text()
-                        if not cover_page_text:
-                            # No extractable text found.
-                            # Turn the page into an image and use OCR to get text.
-                            pdf_image = cover_page.to_image(resolution=150)
+        attachments = self.get(attachment_url).json()
 
-                            with io.BytesIO() as in_mem_image:
-                                pdf_image.save(in_mem_image)
-                                in_mem_image.seek(0)
-                                cover_page_text = pytesseract.image_to_string(Image.open(in_mem_image))
+        if len(attachments) == 0:
+            raise ValueError("No attachments for the approved minutes matter")
+        elif len(attachments) == 1:
+            return attachments[0]
+        else:
+            # This dictionary contains a mapping of dates of events known to
+            # have more than one minutes file attached to the approval matter,
+            # to the name of the attachment representing the correct minutes
+            # file.
+            handled_cases = {
+                "May 28, 2015": "Regular Board Meeting Minutes on May 28, 2015",
+                "September 24, 2020": "LA SAFE Minutes - September 24, 2020",
+                "June 24, 2021": "LA SAFE MINUTES - June 24, 2021",
+                "December 2, 2021": "Regular Board Meeting MINUTES - December 2, 2021",
+                "January 27, 2022": "Regular Board Meeting MINUTES - January 27, 2022",
+                "February 24, 2022": "MINUTES - February 24, 2022 RBM",
+                "June 23, 2022": "Regular Board Meeting MINUTES - June 23, 2022",
+                "December 1, 2022": "Regular Board Meeting MINUTES - December 1, 2022",
+            }
 
-                    if "MINUTES" in cover_page_text.upper():
-                        yield attach
-                        n_minutes += 1
+            if date in handled_cases:
+                attachment_name = handled_cases[date]
+                (attachment,) = [
+                    each
+                    for each in attachments
+                    if each["MatterAttachmentName"] == attachment_name
+                ]
+                return attachment
 
-        if n_minutes == 0:
-            self.warning(
-                "Couldn't find minutes for the {} meeting of {}.".format(name, date)
-            )
+            else:
+                try:
+                    (attachment,) = [
+                        each
+                        for each in attachments
+                        if "minutes" in each["MatterAttachmentName"].lower()
+                    ]
+                except ValueError:
+                    LOGGER.critical(
+                        "More than one attachment for the approved minutes matter"
+                    )
+                else:
+                    msg = (
+                        "More than attachment for minutes matter {0}, using {1}".format(
+                            matter["MatterId"], attachment["MatterAttachmentName"]
+                        )
+                    )
+                    self.info(msg)
+                    return attachment
 
 
 class LAMetroAPIEvent(dict):
