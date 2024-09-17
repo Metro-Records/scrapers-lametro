@@ -528,6 +528,12 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         # Sometimes, the search returns more than one board report.
         # Go through each matter yielded from this generator to account for that.
         for matter in result:
+            if (matter['MatterRestrictViewViaWeb'] or
+            matter['MatterStatusName'] == 'Draft' or
+            matter['MatterBodyName'] == 'TO BE REMOVED'):
+            # Ignore this matter if there are signs that it shouldn't be processed.
+                continue
+
             attachment_url = self.BASE_URL + "/matters/{}/attachments".format(
                 matter["MatterId"]
             )
@@ -569,7 +575,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         if n_minutes == 0:
             self.warning(
-                "Couldn't find minutes for the {} meeting of {}.".format(name, date)
+                f"Couldn't find minutes for the {name} meeting of {date}."
             )
 
 
