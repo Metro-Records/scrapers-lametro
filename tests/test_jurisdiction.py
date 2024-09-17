@@ -6,11 +6,12 @@ from lametro import Lametro
 
 
 @pytest.mark.parametrize("test_date", [
-    '2024-06-10',
-    '2024-06-23',
-    '2024-10-01',
-    '2025-05-01',
-    '2025-06-30'
+    '2024-06-10',  # before the last week of the fiscal year
+    '2024-06-23',  # start of the last week of the fiscal year
+    '2024-10-01',  # well after the last week
+    '2024-12-24',  # last week of regular year
+    '2025-05-01',  # before the last week of the next fiscal year
+    '2025-06-30'   # end of the last week of the next fiscal year
 ])
 def test_legislative_sessions(test_date):
     '''

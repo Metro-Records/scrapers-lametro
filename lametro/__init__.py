@@ -19,11 +19,17 @@ class Lametro(Jurisdiction):
 
     @property
     def legislative_sessions():
+        '''
+        Yield each year that we'd like to scrape today.
+        Allow for the next fiscal year to be scraped during
+        and after the last week of the current fiscal year.
+        '''
         today = datetime.now()
         this_year = today.year
         allowed_years = list(range(2014, this_year))
 
         if (today.month == 6 and today.day >= 23) or today.month >= 7:
+            # The last week of this fiscal year has begun. Start scraping the next year
             allowed_years.append(this_year)
 
         for year in allowed_years:
