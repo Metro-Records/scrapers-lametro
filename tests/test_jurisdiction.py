@@ -12,7 +12,7 @@ from lametro import Lametro
     '2025-05-01',
     '2025-06-30'
 ])
-def test_legislative_session(test_date):
+def test_legislative_sessions(test_date):
     '''
     Test that next fiscal year's legislative sessions are included
     only when it's the last week of the current one.
@@ -26,7 +26,7 @@ def test_legislative_session(test_date):
         fake_date = fake_now.date()
         next_year = str(fake_now.year + 1)  
 
-        sessions = list(Lametro.get_legislative_sessions())
+        sessions = list(Lametro.legislative_sessions.fget())
         latest_session_date = sessions[-1]["end_date"]
 
         if fake_date < last_week_of_year:

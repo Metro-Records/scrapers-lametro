@@ -17,8 +17,8 @@ class Lametro(Jurisdiction):
         "events": LametroEventScraper,
     }
 
-    @staticmethod
-    def get_legislative_sessions():
+    @property
+    def legislative_sessions():
         today = datetime.now()
         this_year = today.year
         allowed_years = list(range(2014, this_year))
