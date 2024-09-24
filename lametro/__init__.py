@@ -18,7 +18,7 @@ class Lametro(Jurisdiction):
     }
 
     @property
-    def legislative_sessions():
+    def legislative_sessions(self):
         '''
         Yield each year that we'd like to scrape today.
         Allow for the next fiscal year to be scraped during

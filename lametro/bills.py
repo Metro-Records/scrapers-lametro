@@ -76,7 +76,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
         localize = pytz.timezone(self.TIMEZONE).localize
         fmt = '%Y-%m-%d'
 
-        for session in Lametro.legislative_sessions.fget():
+        for session in Lametro().legislative_sessions:
             start_datetime = datetime.datetime.strptime(session['start_date'], fmt)
             end_datetime = datetime.datetime.strptime(session['end_date'], fmt)
 
