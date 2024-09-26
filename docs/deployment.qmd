@@ -1,0 +1,51 @@
+---
+title: "Deployment"
+order: 3
+---
+
+We deploy the scrapers as tagged Docker images. Tagged images are built
+automatically and [published to the GitHub Container Registry](https://github.com/Metro-Records/scrapers-lametro/pkgs/container/scrapers-lametro)
+by [the `publish_image.yml` workflow](https://github.com/Metro-Records/scrapers-lametro/blob/main/.github/workflows/publish_image.yml).
+
+Deployment can be summarized as follows:
+
+| On push to... | Build tag... | In use by... |
+| - | - | - |
+| `main` | `main` | [https://la-metro-dashboard-heroku.datamade.us/home](https://la-metro-dashboard-heroku.datamade.us/home) |
+| `deploy` | `deploy` | [https://la-metro-dashboard-heroku-prod.datamade.us/home](https://la-metro-dashboard-heroku-prod.datamade.us/home) |
+
+## When should I deploy the scrapers?
+
+A `main` tag will be built automatically when a pull request is merged. 
+
+::: {.callout-caution}
+If you have made a significant change to a scraper, it is recommended that you run that
+scrape on the staging Airflow instance before deploying the change to the production
+Airflow instance.
+:::
+
+A `deploy` tag will be built on pushes to the `deploy` branch. Once you are ready to
+deploy your change to production, run:
+
+```bash
+git push origin main:deploy
+```
+
+### A note on dependencies
+
+We install our `pupa` and `legistar` dependencies from the `master` branch of their
+respective repositories, i.e., `pip` will not automatically recognize changes to
+these libraries.
+
+::: {.callout-warning}
+If you have made a change to `pupa` or `legistar`, you must rebuild the scraper
+images to deploy it.
+:::
+
+To rebuild the scraper images without making a change to the scraper code, check out
+the main branch, then run:
+
+```bash
+git commit --allow-empty -m "Rebuild scrapers"
+git push origin main && git push origin main:deploy
+```

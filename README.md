@@ -1,26 +1,22 @@
-scrapers-lametro
-=====================
+# scrapers-lametro
 
 DataMade's source for municipal scrapers feeding [boardagendas.metro.net](https://boardagendas.metro.net).
 
-## Development
+For more on development, debugging, deployment, and more, [consult the documentation](https://metro-records.github.io/scrapers-lametro/)!
 
-### Making changes to this repository
+## Updating the documentation
 
-Make your changes to the scraper code here.
-
-Merge your PR to push to `main` and publish a `main` tag of the scraper image.
-
-To publish a `production` tag of the scraper image, sync the `main` branch with the
-`deploy` branch:
+To make changes to the documentation, [install Quarto](https://quarto.org/docs/get-started/).
+Then, run the following in your terminal:
 
 ```bash
-git push origin main:deploy
+quarto preview docs
 ```
 
-### Scheduling
+Make your changes to the `.qmd` files in the `docs/` directory. They will be automatically
+reflected in your local version of the docs.
 
-The LA Metro scrapers are scheduled via Airflow. The production Airflow instance
-is located at [la-metro-dashboard.datamade.us](https://la-metro-dashboard.datamade.us/).
-DataMade staff can find login credentials under the Metro support email in
-LastPass. The underlying code is in the [`datamade/la-metro-dashboard` repository](https://github.com/datamade/la-metro-dashboard).
+For more on authoring docs with Quarto, see [their Getting Started guide](https://quarto.org/docs/get-started/authoring/text-editor.html) and [documentation](https://quarto.org/docs/guide/).
+
+The GitHub Pages site will rebuild automatically when your documentation changes are
+merged into `main`.

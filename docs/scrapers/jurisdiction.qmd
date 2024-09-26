@@ -1,0 +1,52 @@
+---
+title: "Jurisdiction Scraper"
+order: 1
+---
+
+- Located in `lametro/__init__.py`
+- Creates jurisdiction, organization, and posts
+  - Specifically, creates organizations that are not coded as the board itself or a committee
+  in the Legistar API, as bodies meeting these parameters are created in the people scraper
+- Creates legislative sessions
+
+## Core concepts
+
+### Division
+
+- Political geography
+- "Jurisdictions exist within a division, while Posts can represent a division"
+- Divisions relevant to LA Metro:
+  - City of Los Angeles
+  - [Los Angeles County supervisorial districts](https://experience.arcgis.com/experience/159e4b53494e47fe82bacd8016065843)
+  - [Statutorially defined transit sectors](https://boardagendas.metro.net/static/pdf/CitySelectionCommitte-MTA-Rules-and-Regulations.pdf)
+  - [Caltrans (Calfornia Department of Transportation) District](https://dot.ca.gov/caltrans-near-me/district-7)
+- Further reading: [https://open-civic-data.readthedocs.io/en/latest/proposals/0002.html](https://open-civic-data.readthedocs.io/en/latest/proposals/0002.html)
+
+### Jurisdiction
+
+- Logical unit of governance
+- Example: LA Metro
+- Further reading: [https://open-civic-data.readthedocs.io/en/latest/proposals/0003.html](https://open-civic-data.readthedocs.io/en/latest/proposals/0003.html)
+
+### Post
+
+- Position in organization
+- Posts define the core positions within an organization, and can optionally be associated with a Division, i.e., the political geography they represent
+- Examples:
+  - Post associated with a division: Appointee of the Mayor of the City of Los Angeles on the Board of Directors representing the City of Los Angeles
+  - Post not associated with a division: Chair of the Board of Directors
+- Further reading: [https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html](https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html)
+
+### Membership
+
+- "A relationship between a Person and an Organization, possibly including a Post"
+  - Committee Memberships are not associated with a Post because committees do not have a defined membership structure
+- Memberships are created by the [people scraper](/scrapers/people.html)
+- Further reading: [https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html](https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html)
+
+## Key issues
+
+- Legislative sessions must be added manually every June. The scraper breaks if they are not
+added before legislation is created in the new session.
+  - [Write a self-sufficient method for detecting LA Metro legislative session](https://github.com/opencivicdata/scrapers-us-municipal/issues/161)
+  - [Update legislative session automatically](https://github.com/Metro-Records/scrapers-lametro/issues/22)
