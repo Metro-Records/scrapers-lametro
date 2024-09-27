@@ -10,6 +10,7 @@ from pupa.scrape import Event, Scraper
 from legistar.base import LegistarScraper
 
 import pdfplumber
+from pdfminer.pdfparser import PDFSyntaxError
 import pytesseract
 from PIL import Image
 
@@ -555,7 +556,11 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                     response = requests.get(url)
 
                     with io.BytesIO(response.content) as filestream:
-                        pdf = pdfplumber.open(filestream)
+                        try:
+                            pdf = pdfplumber.open(filestream)
+                        except PDFSyntaxError as e:
+                            capture_exception(e)
+                            continue
                         cover_page = pdf.pages[0]
 
                         cover_page_text = cover_page.extract_text()
