@@ -194,6 +194,16 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#how-do-they-work" id="toc-how-do-they-work" class="nav-link active" data-scroll-target="#how-do-they-work">How do they work?</a></li>
   <li><a href="#how-are-they-run" id="toc-how-are-they-run" class="nav-link" data-scroll-target="#how-are-they-run">How are they run?</a></li>
+  <li><a href="#when-do-they-run" id="toc-when-do-they-run" class="nav-link" data-scroll-target="#when-do-they-run">When do they run?</a>
+  <ul class="collapse">
+  <li><a href="#windowed_bill_scrape" id="toc-windowed_bill_scrape" class="nav-link" data-scroll-target="#windowed_bill_scrape">windowed_bill_scrape</a></li>
+  <li><a href="#fast_windowed_bill_scrape" id="toc-fast_windowed_bill_scrape" class="nav-link" data-scroll-target="#fast_windowed_bill_scrape">fast_windowed_bill_scrape</a></li>
+  <li><a href="#fast_full_bill_scrape" id="toc-fast_full_bill_scrape" class="nav-link" data-scroll-target="#fast_full_bill_scrape">fast_full_bill_scrape</a></li>
+  <li><a href="#windowed_event_scrape" id="toc-windowed_event_scrape" class="nav-link" data-scroll-target="#windowed_event_scrape">windowed_event_scrape</a></li>
+  <li><a href="#fast_windowed_event_scrape" id="toc-fast_windowed_event_scrape" class="nav-link" data-scroll-target="#fast_windowed_event_scrape">fast_windowed_event_scrape</a></li>
+  <li><a href="#fast_full_event_scrape" id="toc-fast_full_event_scrape" class="nav-link" data-scroll-target="#fast_full_event_scrape">fast_full_event_scrape</a></li>
+  <li><a href="#person_scrape" id="toc-person_scrape" class="nav-link" data-scroll-target="#person_scrape">person_scrape</a></li>
+  </ul></li>
   <li><a href="#what-do-they-depend-on" id="toc-what-do-they-depend-on" class="nav-link" data-scroll-target="#what-do-they-depend-on">What do they depend on?</a></li>
   </ul>
 </nav>
@@ -251,6 +261,97 @@ ul.task-list li input[type="checkbox"] {
 </tbody>
 </table>
 <p>See <a href="./deployment.html">Deployment</a> for more on how scraper image tags are built.</p>
+</section>
+<section id="when-do-they-run" class="level2">
+<h2 class="anchored" data-anchor-id="when-do-they-run">When do they run?</h2>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>See <a href="https://la-metro-dashboard-heroku-prod.datamade.us/dashboard/">the Airflow dashboard</a> for information about the latest and next scraper runs.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Scrape schedules are written in UTC!</strong></p>
+<ul>
+<li>Subtract 7 hours to convert to Los Angeles time.</li>
+<li>Subtract 5 hours to convert to Chicago time.</li>
+</ul>
+<p>Mental math getting you down? <a href="https://www.worldtimebuddy.com/?pl=1&amp;lid=100,5368361,4887398&amp;h=100&amp;hf=1">Try World Time Buddy</a>!</p>
+</div>
+</div>
+<section id="windowed_bill_scrape" class="level3">
+<h3 class="anchored" data-anchor-id="windowed_bill_scrape">windowed_bill_scrape</h3>
+<p><em>Scrape bills with a window of 0.05 at 5, 20, 35, and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.</em></p>
+<ul>
+<li><p>At 5, 20, 35, and 50 minutes past the hour, Sunday through Thursday</p></li>
+<li><p>At 5, 20, 35, and 50 minutes past the hour, between 12:00 AM and 08:59 PM, only on Friday</p></li>
+<li><p>At 5, 20, 35, and 50 minutes past the hour, between 06:00 AM and 11:59 PM, only on Saturday</p></li>
+</ul>
+</section>
+<section id="fast_windowed_bill_scrape" class="level3">
+<h3 class="anchored" data-anchor-id="fast_windowed_bill_scrape">fast_windowed_bill_scrape</h3>
+<p><em>Scrape bills with a window of 1 at 35 and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.</em></p>
+<ul>
+<li><p>At 35 and 50 minutes past the hour, between 09:00 PM and 11:59 PM, only on Friday</p></li>
+<li><p>At 35 and 50 minutes past the hour, between 12:00 AM and 05:59 AM, only on Saturday</p></li>
+</ul>
+</section>
+<section id="fast_full_bill_scrape" class="level3">
+<h3 class="anchored" data-anchor-id="fast_full_bill_scrape">fast_full_bill_scrape</h3>
+<p><em>Scrape all bills quickly at 5 past the hour. This generally takes less than 30 minutes.</em></p>
+<ul>
+<li><p>At 5 minutes past the hour, between 09:00 PM and 11:59 PM, only on Friday</p></li>
+<li><p>At 5 minutes past the hour, between 12:00 AM and 05:59 AM, only on Saturday</p></li>
+</ul>
+</section>
+<section id="windowed_event_scrape" class="level3">
+<h3 class="anchored" data-anchor-id="windowed_event_scrape">windowed_event_scrape</h3>
+<p><em>Scrape events with a window of 0.05 at 0, 15, 30, and 45 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.</em></p>
+<ul>
+<li><p>At 0, 15, 30, and 45 minutes past the hour, Sunday through Thursday</p></li>
+<li><p>At 0, 15, 30, and 45 minutes past the hour, between 12:00 AM and 08:59 PM, only on Friday</p></li>
+<li><p>At 0, 15, 30, and 45 minutes past the hour, between 06:00 AM and 11:59 PM, only on Saturday</p></li>
+</ul>
+</section>
+<section id="fast_windowed_event_scrape" class="level3">
+<h3 class="anchored" data-anchor-id="fast_windowed_event_scrape">fast_windowed_event_scrape</h3>
+<p><em>Scrape events with a window of 1 at 35 and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.</em></p>
+<ul>
+<li><p>At 30 and 45 minutes past the hour, between 09:00 PM and 11:59 PM, only on Friday</p></li>
+<li><p>At 30 and 45 minutes past the hour, between 12:00 AM and 05:59 AM, only on Saturday</p></li>
+</ul>
+</section>
+<section id="fast_full_event_scrape" class="level3">
+<h3 class="anchored" data-anchor-id="fast_full_event_scrape">fast_full_event_scrape</h3>
+<p><em>Scrape all events quickly on the hour. This generally takes less than 30 minutes.</em></p>
+<ul>
+<li><p>Between 09:00 PM and 11:59 PM, only on Friday</p></li>
+<li><p>Between 12:00 AM and 05:59 AM, only on Saturday</p></li>
+</ul>
+</section>
+<section id="person_scrape" class="level3">
+<h3 class="anchored" data-anchor-id="person_scrape">person_scrape</h3>
+<p><em>Scrape all people and committees. Run in lieu of full scrape on Fridays, when all bills and events are scraped once an hour.</em></p>
+<ul>
+<li>At 03:05 AM, only on Saturday</li>
+</ul>
+</section>
 </section>
 <section id="what-do-they-depend-on" class="level2">
 <h2 class="anchored" data-anchor-id="what-do-they-depend-on">What do they depend on?</h2>
