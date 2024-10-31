@@ -1,3 +1,5 @@
+name: Publish documentation to GitHub Pages
+
 on:
   workflow_dispatch:
   push:
