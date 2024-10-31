@@ -24,6 +24,9 @@ jobs:
         if: steps.docs-changed.outputs.any_changed == 'true'
         uses: quarto-dev/quarto-actions/setup@v2
 
+      - name: Install dependencies
+        run: pip install -r docs/requirements.txt
+
       - name: Render and Publish
         if: steps.docs-changed.outputs.any_changed == 'true'
         uses: quarto-dev/quarto-actions/publish@v2
