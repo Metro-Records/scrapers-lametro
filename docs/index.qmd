@@ -74,14 +74,13 @@ for line in config_file.iter_lines():
 
     if line_str.startswith("SCRAPING_DAGS"):
         config_start = True
-        continue
 
     if config_start:
         _dag_config.append(line_str)
 
-exec("dag_config = {" + "".join(_dag_config))
+exec("".join(_dag_config))
 
-for dag, conf in dag_config.items():
+for dag, conf in SCRAPING_DAGS.items():
     print(f"### {dag}")
 
     print(f"_{conf['description']}_\n\n")
