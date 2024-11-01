@@ -3,7 +3,7 @@ import logging
 import requests
 import io
 
-from sentry_sdk import capture_exception
+from sentry_sdk import capture_exception, capture_message
 
 from legistar.events import LegistarAPIEventScraper
 from pupa.scrape import Event, Scraper
@@ -559,7 +559,10 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                         try:
                             pdf = pdfplumber.open(filestream)
                         except PDFSyntaxError as e:
-                            capture_exception(e)
+                            capture_message(
+                                f"PDFPlumber encountered an error opening a file: {e}",
+                                "warning"
+                            )
                             continue
                         cover_page = pdf.pages[0]
 
