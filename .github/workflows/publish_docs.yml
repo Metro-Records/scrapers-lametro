@@ -1,3 +1,5 @@
+name: Publish documentation to GitHub Pages
+
 on:
   workflow_dispatch:
   push:
@@ -23,6 +25,9 @@ jobs:
       - name: Set up Quarto
         if: steps.docs-changed.outputs.any_changed == 'true'
         uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install dependencies
+        run: pip install -r docs/requirements.txt
 
       - name: Render and Publish
         if: steps.docs-changed.outputs.any_changed == 'true'

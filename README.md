@@ -7,6 +7,17 @@ For more on development, debugging, deployment, and more, [consult the documenta
 ## Updating the documentation
 
 To make changes to the documentation, [install Quarto](https://quarto.org/docs/get-started/).
+
+Next, create a virtual environment, and install the documentation's Python dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r docs/requirements.txt
+```
+
+(Remember to activate your virtual environment with `source .venv/bin/activate` next time you want to work on the docs!)
+
 Then, run the following in your terminal:
 
 ```bash

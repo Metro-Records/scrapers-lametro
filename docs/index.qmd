@@ -27,6 +27,69 @@ outlined below.
 
 See [Deployment](deployment.qmd) for more on how scraper image tags are built.
 
+## When do they run?
+
+::: {.callout-tip}
+See [the Airflow dashboard](https://la-metro-dashboard-heroku-prod.datamade.us/dashboard/) for information
+about the latest and next scraper runs.
+:::
+
+```{python}
+#| echo: false
+import datetime
+import pytz
+
+def get_offset(tz):
+  return abs(int(tz.utcoffset(datetime.datetime.now()).total_seconds() / (60*60)))
+
+ordtz = pytz.timezone("America/Chicago")
+latz = pytz.timezone("America/Los_Angeles")
+```
+
+::: {.callout-tip}
+**Scrape schedules are written in UTC!** 
+
+- Subtract `{python} get_offset(latz)` hours to convert to Los Angeles time.
+- Subtract `{python} get_offset(ordtz)` hours to convert to Chicago time.
+
+Mental math getting you down? [Try World Time Buddy](https://www.worldtimebuddy.com/?pl=1&lid=100,5368361,4887398&h=100&hf=1)!
+:::
+
+```{python}
+#| echo: false
+#| output: asis
+from datetime import timedelta
+import json
+
+from cron_descriptor import get_description
+import requests
+
+config_file = requests.get("https://raw.githubusercontent.com/Metro-Records/la-metro-dashboard/refs/heads/main/dags/config.py")
+
+config_start = False
+_dag_config = []
+
+for line in config_file.iter_lines():
+    line_str = line.decode("utf-8")
+
+    if line_str.startswith("SCRAPING_DAGS"):
+        config_start = True
+
+    if config_start:
+        _dag_config.append(line_str)
+
+exec("".join(_dag_config))
+
+for dag, conf in SCRAPING_DAGS.items():
+    print(f"### {dag}")
+
+    print(f"_{conf['description']}_\n\n")
+    for interval in conf["schedule_interval"]:
+        print(f"- {get_description(interval)}\n")
+
+    print("\n")
+```
+
 ## What do they depend on?
 
 The scrapers have a couple of key dependencies.
