@@ -63,6 +63,17 @@ class DuplicateAgendaItemException(Exception):
         super().__init__(message)
 
 
+class MissingAttachmentsException(Exception):
+    def __init__(self, matter_id, attachment_url):
+        message = (
+            f"No attachments for the approved minutes matter with an ID of {matter_id}. "
+            f"View the list of available attachments at <{attachment_url}>. "
+            "Contact Metro, and ask them to confirm whether this should have an attachment."
+        )
+
+        super().__init__(message)
+
+
 class LametroEventScraper(LegistarAPIEventScraper, Scraper):
     BASE_URL = "https://webapi.legistar.com/v1/metro"
     WEB_URL = "https://metro.legistar.com/"
@@ -541,45 +552,49 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
             attachments = self.get(attachment_url).json()
 
-            if len(attachments) == 0:
-                raise ValueError("No attachments for the approved minutes matter")
-            elif len(attachments) == 1:
-                yield attachments[0]
-                n_minutes += 1
-            else:
-                """
-                Multiple attachments have been found.
-                Return only those that look like minutes files.
-                """
-                for attach in attachments:
-                    url = attach["MatterAttachmentHyperlink"]
-                    response = requests.get(url)
+            try:
+                if len(attachments) == 0:
+                    raise MissingAttachmentsException(matter["MatterId"], attachment_url)
+                elif len(attachments) == 1:
+                    yield attachments[0]
+                    n_minutes += 1
+                else:
+                    """
+                    Multiple attachments have been found.
+                    Return only those that look like minutes files.
+                    """
+                    for attach in attachments:
+                        url = attach["MatterAttachmentHyperlink"]
+                        response = requests.get(url)
 
-                    with io.BytesIO(response.content) as filestream:
-                        try:
-                            pdf = pdfplumber.open(filestream)
-                        except PDFSyntaxError as e:
-                            capture_message(
-                                f"PDFPlumber encountered an error opening a file: {e}",
-                                "warning"
-                            )
-                            continue
-                        cover_page = pdf.pages[0]
+                        with io.BytesIO(response.content) as filestream:
+                            try:
+                                pdf = pdfplumber.open(filestream)
+                            except PDFSyntaxError as e:
+                                capture_message(
+                                    f"PDFPlumber encountered an error opening a file: {e}",
+                                    "warning"
+                                )
+                                continue
+                            cover_page = pdf.pages[0]
 
-                        cover_page_text = cover_page.extract_text()
-                        if not cover_page_text:
-                            # No extractable text found.
-                            # Turn the page into an image and use OCR to get text.
-                            pdf_image = cover_page.to_image(resolution=150)
+                            cover_page_text = cover_page.extract_text()
+                            if not cover_page_text:
+                                # No extractable text found.
+                                # Turn the page into an image and use OCR to get text.
+                                pdf_image = cover_page.to_image(resolution=150)
 
-                            with io.BytesIO() as in_mem_image:
-                                pdf_image.save(in_mem_image)
-                                in_mem_image.seek(0)
-                                cover_page_text = pytesseract.image_to_string(Image.open(in_mem_image))
+                                with io.BytesIO() as in_mem_image:
+                                    pdf_image.save(in_mem_image)
+                                    in_mem_image.seek(0)
+                                    cover_page_text = pytesseract.image_to_string(Image.open(in_mem_image))
 
-                    if "MINUTES" in cover_page_text.upper():
-                        yield attach
-                        n_minutes += 1
+                        if "MINUTES" in cover_page_text.upper():
+                            yield attach
+                            n_minutes += 1
+            except MissingAttachmentsException as e:
+                capture_exception(e)
+                continue
 
         if n_minutes == 0:
             self.warning(
