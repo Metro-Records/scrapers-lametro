@@ -63,6 +63,17 @@ class DuplicateAgendaItemException(Exception):
         super().__init__(message)
 
 
+class MissingAttachmentsException(Exception):
+    def __init__(self, matter_id, attachment_url):
+        message = (
+            f"No attachments for the approved minutes matter with an ID of {matter_id}. "
+            f"View the list of available attachments at <{attachment_url}>. "
+            "Contact Metro, and ask them to confirm whether this should have an attachment."
+        )
+
+        super().__init__(message)
+
+
 class LametroEventScraper(LegistarAPIEventScraper, Scraper):
     BASE_URL = "https://webapi.legistar.com/v1/metro"
     WEB_URL = "https://metro.legistar.com/"
@@ -541,9 +552,14 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
             attachments = self.get(attachment_url).json()
 
-            if len(attachments) == 0:
-                raise ValueError("No attachments for the approved minutes matter")
-            elif len(attachments) == 1:
+            try:
+                if len(attachments) == 0:
+                    raise MissingAttachmentsException(matter["MatterId"], attachment_url)
+            except MissingAttachmentsException as e:
+                capture_exception(e)
+                continue
+
+            if len(attachments) == 1:
                 yield attachments[0]
                 n_minutes += 1
             else:
