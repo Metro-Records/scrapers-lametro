@@ -525,12 +525,12 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             "/matters/",
             "MatterId",
             (
-                f"{associated_with_meeting_body} and " +
-                f"{meeting_date_in_title} and " +
-                "(" +
-                    f"({matter_type_minutes}) or " +
-                    f"({minutes_in_title} and {matter_type_informational})" +
-                ")"
+                f"{associated_with_meeting_body} and "
+                + f"{meeting_date_in_title} and "
+                + "("
+                + f"({matter_type_minutes}) or "
+                + f"({minutes_in_title} and {matter_type_informational})"
+                + ")"
             ),
         )
 
@@ -540,10 +540,12 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         # Sometimes, the search returns more than one board report.
         # Go through each matter yielded from this generator to account for that.
         for matter in result:
-            if (matter['MatterRestrictViewViaWeb'] or
-            matter['MatterStatusName'] == 'Draft' or
-            matter['MatterBodyName'] == 'TO BE REMOVED'):
-            # Ignore this matter if there are signs that it shouldn't be processed.
+            if (
+                matter["MatterRestrictViewViaWeb"]
+                or matter["MatterStatusName"] == "Draft"
+                or matter["MatterBodyName"] == "TO BE REMOVED"
+            ):
+                # Ignore this matter if there are signs that it shouldn't be processed.
                 continue
 
             attachment_url = self.BASE_URL + "/matters/{}/attachments".format(
@@ -554,7 +556,9 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
             try:
                 if len(attachments) == 0:
-                    raise MissingAttachmentsException(matter["MatterId"], attachment_url)
+                    raise MissingAttachmentsException(
+                        matter["MatterId"], attachment_url
+                    )
             except MissingAttachmentsException as e:
                 capture_exception(e)
                 continue
@@ -577,7 +581,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                         except PDFSyntaxError as e:
                             capture_message(
                                 f"PDFPlumber encountered an error opening a file: {e}",
-                                "warning"
+                                "warning",
                             )
                             continue
                         cover_page = pdf.pages[0]
@@ -591,16 +595,19 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                             with io.BytesIO() as in_mem_image:
                                 pdf_image.save(in_mem_image)
                                 in_mem_image.seek(0)
-                                cover_page_text = pytesseract.image_to_string(Image.open(in_mem_image))
+                                cover_page_text = pytesseract.image_to_string(
+                                    Image.open(in_mem_image)
+                                )
 
-                    if "MINUTES" in cover_page_text.upper():
+                    if all(
+                        substr in cover_page_text.lower()
+                        for substr in (name.lower(), "minutes")
+                    ):
                         yield attach
                         n_minutes += 1
 
         if n_minutes == 0:
-            self.warning(
-                f"Couldn't find minutes for the {name} meeting of {date}."
-            )
+            self.warning(f"Couldn't find minutes for the {name} meeting of {date}.")
 
 
 class LAMetroAPIEvent(dict):
