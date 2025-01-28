@@ -159,7 +159,10 @@ def test_events_paired(event_scraper, api_event, web_event, mocker):
         assert "{} already exists as a key".format(event_key) in str(excinfo.value)
 
 
-def test_multiple_minutes_candidates_handling(event_scraper, api_event):
+@pytest.mark.parametrize("test_case", [
+   "a", "b"
+])
+def test_multiple_minutes_candidates_handling(event_scraper, api_event, test_case):
     """
     The minutes candidates fixture contains a number of test cases:
 
@@ -181,7 +184,7 @@ def test_multiple_minutes_candidates_handling(event_scraper, api_event):
     ) as minutes_candidates, open(
         Path("tests/fixtures/wrong_minutes_file.pdf"), "rb"
     ) as wrong_file, open(
-        Path("tests/fixtures/right_minutes_file.pdf"), "rb"
+        Path(f"tests/fixtures/right_minutes_file_{test_case}.pdf"), "rb"
     ) as right_file:
         m.get(
             re.compile(r"/matters"), json=json.load(matter_candidates), status_code=200
