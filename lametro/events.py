@@ -590,7 +590,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                         if not cover_page_text:
                             # No extractable text found.
                             # Turn the page into an image and use OCR to get text.
-                            pdf_image = cover_page.to_image(resolution=150)
+                            pdf_image = cover_page.to_image(force_mediabox=True)
 
                             with io.BytesIO() as in_mem_image:
                                 pdf_image.save(in_mem_image)
