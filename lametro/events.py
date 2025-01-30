@@ -1,5 +1,7 @@
 import datetime
 import logging
+from typing import Generator, ValuesView
+import itertools
 import requests
 import io
 
@@ -21,6 +23,67 @@ except:
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+class LAMetroAPIEvent(dict):
+    """
+    This class is for adding methods to the API event dict
+    to faciliate maching events with their other-language
+    partners.
+    """
+
+    @property
+    def is_spanish(self):
+        return self["EventBodyName"].endswith(" (SAP)")
+
+    @property
+    def own_key(self):
+        return (self["EventBodyName"], self["EventDate"])
+
+    @property
+    def _partner_name(self):
+        if self.is_spanish:
+            return self["EventBodyName"].rstrip(" (SAP)")
+        else:
+            return self["EventBodyName"] + " (SAP)"
+
+    def is_partner(self, other):
+        return (
+            self._partner_name == other["EventBodyName"]
+            and self["EventDate"] == other["EventDate"]
+        )
+
+    @property
+    def partner_search_string(self):
+        search_string = "EventBodyName eq '{}'".format(self._partner_name)
+        search_string += " and EventDate eq datetime'{}'".format(self["EventDate"])
+
+        return search_string
+
+    @property
+    def partner_key(self):
+        return (self._partner_name, self["EventDate"])
+
+    @property
+    def key(self):
+        return (self["EventBodyName"], self["EventDate"])
+
+
+class LAMetroWebEvent(dict):
+    """
+    This class is for adding methods to the web event dict
+    to facilitate labeling and sourcing audio appropriately.
+    """
+
+    web_scraper = LegistarScraper(retry_attempts=3, requests_per_minute=0)
+
+    @property
+    def has_audio(self):
+        return self["Meeting video"] != "Not\xa0available"
+
+    @property
+    def has_ecomment(self):
+        return self["eComment"] != "Not\xa0available"
 
 
 class UnmatchedEventError(Exception):
@@ -86,9 +149,12 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if TOKEN:
             self.params = {"token": TOKEN}
 
-    def _pair_events(self, events):
-        paired_events = []
-        unpaired_events = {}
+    def _pair_events(self, events: list[LAMetroAPIEvent]) -> tuple[
+        list[LAMetroAPIEvent],
+        ValuesView[LAMetroAPIEvent],
+    ]:
+        paired_events: list[LAMetroAPIEvent] = []
+        unpaired_events: dict[tuple[str, str], LAMetroAPIEvent] = {}
 
         for incoming_event in events:
             try:
@@ -103,7 +169,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         return paired_events, unpaired_events.values()
 
-    def _find_partner(self, event):
+    def _find_partner(self, event: LAMetroAPIEvent) -> LAMetroAPIEvent | None:
         """
         Attempt to find other-language partner of an
         event. Sometimes English events won't have Spanish
@@ -123,7 +189,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
             return None
 
-    def api_events(self, *args, **kwargs):
+    def api_events(self, *args, **kwargs) -> Generator[LAMetroAPIEvent, None, None]:
         """
         For meetings, Metro provides an English audio recording and
         sometimes a Spanish audio translation. Due to limitations with
@@ -190,9 +256,17 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if event_date > spanish_start_date and event.is_spanish:
             LOGGER.critical("Could not find English event partner.")
 
-    def _merge_events(self, events):
-        english_events = []
-        spanish_events = {}
+    def _merge_events(
+        self, events: Generator[tuple[LAMetroAPIEvent, dict], None, None]
+    ) -> list[tuple[LAMetroAPIEvent, LAMetroWebEvent]]:
+        english_events: list[tuple[LAMetroAPIEvent, LAMetroWebEvent]] = []
+        spanish_events: dict[
+            tuple[str, str], tuple[LAMetroAPIEvent, LAMetroWebEvent]
+        ] = {}
+
+        import pdb
+
+        pdb.set_trace()
 
         for event, web_event in events:
             web_event = LAMetroWebEvent(web_event)
@@ -265,29 +339,36 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         return english_events
 
-    def paired_event_search(self, route, item_key, search_condition):
-        for _result in self.search(route, item_key, search_condition):
-            result = LAMetroAPIEvent(_result)
-            yield result
+    def event_pair(
+        self, event: tuple[dict, dict]
+    ) -> Generator[tuple[dict, dict], None, None]:
+        api_event, web_event = event
+        partner = self._find_partner(LAMetroAPIEvent(api_event))
 
-            partner = self._find_partner(result)
+        if partner:
+            partner_api_event, partner_web_event = self.event(partner)
+            yield from self._merge_events(
+                [
+                    (LAMetroAPIEvent(api_event), web_event),
+                    (LAMetroAPIEvent(partner_api_event), partner_web_event),
+                ]
+            )
 
-            if partner:
-                yield LAMetroAPIEvent(partner)
-            else:
-                self._log_unpaired_spanish_event(result)
+        else:
+            self._log_unpaired_spanish_event(partner)
+            return api_event, web_event
 
     def scrape(self, window=None, event_ids=None):
         if window and event_ids:
             raise ValueError("Can't specify both window and event_ids")
 
         if event_ids:
-            events = self.events(
-                api_events=self.paired_event_search(
-                    "/events/",
-                    "EventId",
-                    " ".join(f"EventId eq {id}" for id in event_ids.split(",")),
-                )
+            api_events = (
+                self.event(self.get(f"{self.BASE_URL}/events/{id}").json())
+                for id in event_ids.split(",")
+            )
+            events = itertools.chain.from_iterable(
+                self.event_pair(e) for e in api_events
             )
         else:
             n_days_ago = None
@@ -297,7 +378,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                     float(window)
                 )
 
-            events = self.events(since_datetime=n_days_ago)
+            events = self._merge_events(self.events(since_datetime=n_days_ago))
 
         service_councils = set(
             sc["BodyId"]
@@ -306,7 +387,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             )
         )
 
-        for event, web_event in self._merge_events(events):
+        for event, web_event in events:
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
@@ -638,64 +719,3 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         if n_minutes == 0:
             self.warning(f"Couldn't find minutes for the {name} meeting of {date}.")
-
-
-class LAMetroAPIEvent(dict):
-    """
-    This class is for adding methods to the API event dict
-    to faciliate maching events with their other-language
-    partners.
-    """
-
-    @property
-    def is_spanish(self):
-        return self["EventBodyName"].endswith(" (SAP)")
-
-    @property
-    def own_key(self):
-        return (self["EventBodyName"], self["EventDate"])
-
-    @property
-    def _partner_name(self):
-        if self.is_spanish:
-            return self["EventBodyName"].rstrip(" (SAP)")
-        else:
-            return self["EventBodyName"] + " (SAP)"
-
-    def is_partner(self, other):
-        return (
-            self._partner_name == other["EventBodyName"]
-            and self["EventDate"] == other["EventDate"]
-        )
-
-    @property
-    def partner_search_string(self):
-        search_string = "EventBodyName eq '{}'".format(self._partner_name)
-        search_string += " and EventDate eq datetime'{}'".format(self["EventDate"])
-
-        return search_string
-
-    @property
-    def partner_key(self):
-        return (self._partner_name, self["EventDate"])
-
-    @property
-    def key(self):
-        return (self["EventBodyName"], self["EventDate"])
-
-
-class LAMetroWebEvent(dict):
-    """
-    This class is for adding methods to the web event dict
-    to facilitate labeling and sourcing audio appropriately.
-    """
-
-    web_scraper = LegistarScraper(retry_attempts=3, requests_per_minute=0)
-
-    @property
-    def has_audio(self):
-        return self["Meeting video"] != "Not\xa0available"
-
-    @property
-    def has_ecomment(self):
-        return self["eComment"] != "Not\xa0available"
