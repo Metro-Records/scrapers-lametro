@@ -600,7 +600,6 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                                     cover_page_text = pytesseract.image_to_string(
                                         Image.open(in_mem_image)
                                     )
-                                    print(cover_page_text)
 
                                 if all(
                                     substr in cover_page_text.lower()
