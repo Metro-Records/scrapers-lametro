@@ -352,7 +352,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         else:
             self._log_unpaired_spanish_event(partner)
-            return api_event, web_event
+            yield api_event, web_event
 
     def scrape(self, window=None, event_ids=None):
         if window and event_ids:
