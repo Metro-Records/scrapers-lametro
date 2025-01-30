@@ -178,16 +178,17 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             if partial_scrape:
                 partner_event = self._find_partner(unpaired_event)
 
-                spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
-                event_date = datetime.datetime.strptime(
-                    unpaired_event["EventDate"], "%Y-%m-%dT%H:%M:%S"
-                )
-
                 if partner_event is not None:
                     yield partner_event
+                else:
+                    self._log_unpaired_spanish_event(unpaired_event)
 
-                elif event_date > spanish_start_date and unpaired_event.is_spanish:
-                    LOGGER.critical("Could not find English event partner.")
+    def _log_unpaired_spanish_event(self, event):
+        spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
+        event_date = datetime.datetime.strptime(event["EventDate"], "%Y-%m-%dT%H:%M:%S")
+
+        if event_date > spanish_start_date and event.is_spanish:
+            LOGGER.critical("Could not find English event partner.")
 
     def _merge_events(self, events):
         english_events = []
@@ -264,13 +265,39 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         return english_events
 
-    def scrape(self, window=None):
-        if window and float(window) != 0:
-            n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(float(window))
+    def paired_event_search(self, route, item_key, search_condition):
+        for _result in self.search(route, item_key, search_condition):
+            result = LAMetroAPIEvent(_result)
+            yield result
+
+            partner = self._find_partner(result)
+
+            if partner:
+                yield LAMetroAPIEvent(partner)
+            else:
+                self._log_unpaired_spanish_event(result)
+
+    def scrape(self, window=None, event_ids=None):
+        if window and event_ids:
+            raise ValueError("Can't specify both window and event_ids")
+
+        if event_ids:
+            events = self.events(
+                api_events=self.paired_event_search(
+                    "/events/",
+                    "EventId",
+                    " ".join(f"EventId eq {id}" for id in event_ids.split(",")),
+                )
+            )
         else:
             n_days_ago = None
 
-        events = self.events(since_datetime=n_days_ago)
+            if window and float(window) != 0:
+                n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(
+                    float(window)
+                )
+
+            events = self.events(since_datetime=n_days_ago)
 
         service_councils = set(
             sc["BodyId"]
