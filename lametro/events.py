@@ -590,21 +590,25 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                         if not cover_page_text:
                             # No extractable text found.
                             # Turn the page into an image and use OCR to get text.
-                            pdf_image = cover_page.to_image(force_mediabox=True)
+                            high_resolution = cover_page.to_image(resolution=300)
+                            loose_crop = cover_page.to_image(force_mediabox=True)
 
-                            with io.BytesIO() as in_mem_image:
-                                pdf_image.save(in_mem_image)
-                                in_mem_image.seek(0)
-                                cover_page_text = pytesseract.image_to_string(
-                                    Image.open(in_mem_image)
-                                )
+                            for image_version in (high_resolution, loose_crop):
+                                with io.BytesIO() as in_mem_image:
+                                    image_version.save(in_mem_image)
+                                    in_mem_image.seek(0)
+                                    cover_page_text = pytesseract.image_to_string(
+                                        Image.open(in_mem_image)
+                                    )
+                                    print(cover_page_text)
 
-                    if all(
-                        substr in cover_page_text.lower()
-                        for substr in (name.lower(), "minutes")
-                    ):
-                        yield attach
-                        n_minutes += 1
+                                if all(
+                                    substr in cover_page_text.lower()
+                                    for substr in (name.lower(), "minutes")
+                                ):
+                                    yield attach
+                                    n_minutes += 1
+                                    break
 
         if n_minutes == 0:
             self.warning(f"Couldn't find minutes for the {name} meeting of {date}.")

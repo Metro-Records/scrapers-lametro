@@ -160,7 +160,7 @@ def test_events_paired(event_scraper, api_event, web_event, mocker):
 
 
 @pytest.mark.parametrize("test_case", [
-   "a", "b"
+   "a", "b", "c"
 ])
 def test_multiple_minutes_candidates_handling(event_scraper, api_event, test_case):
     """
