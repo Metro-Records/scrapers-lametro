@@ -264,10 +264,6 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             tuple[str, str], tuple[LAMetroAPIEvent, LAMetroWebEvent]
         ] = {}
 
-        import pdb
-
-        pdb.set_trace()
-
         for event, web_event in events:
             web_event = LAMetroWebEvent(web_event)
 
