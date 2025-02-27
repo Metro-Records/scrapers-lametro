@@ -66,7 +66,14 @@ class LAMetroWebEvent(dict):
         return self["eComment"] != "Not\xa0available"
 
 
-class PairedEventStream:
+class LAMetroAPIEventScraper(LegistarAPIEventScraper):
+    BASE_URL = "https://webapi.legistar.com/v1/metro"
+    WEB_URL = "https://metro.legistar.com/"
+    EVENTSPAGE = "https://metro.legistar.com/Calendar.aspx"
+    TIMEZONE = "America/Los_Angeles"
+
+
+class PairedEventStream(LegistarAPIEventScraper):
     """
     - Input: Stream of events that need to be paired
         - Deduplicate events
@@ -90,11 +97,7 @@ class PairedEventStream:
     @property
     def scraper(self):
         if not hasattr(self, "_scraper"):
-            scraper = LegistarAPIEventScraper(retry_attempts=3, requests_per_minute=0)
-            scraper.BASE_URL = "https://webapi.legistar.com/v1/metro"
-            scraper.WEB_URL = "https://metro.legistar.com/"
-            scraper.EVENTSPAGE = "https://metro.legistar.com/Calendar.aspx"
-            scraper.TIMEZONE = "America/Los_Angeles"
+            scraper = LAMetroAPIEventScraper(retry_attempts=3, requests_per_minute=0)
             self._scraper = scraper
         return self._scraper
 

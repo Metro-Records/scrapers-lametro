@@ -384,9 +384,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             )
         )
 
-        for event, web_event in PairedEventStream(
-            events, find_missing_partner=window is not None
-        ):
+        for event, web_event in PairedEventStream(events, find_missing_partner=True):
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
