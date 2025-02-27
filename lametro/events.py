@@ -13,10 +13,11 @@ from sentry_sdk import capture_exception, capture_message
 
 from .paired_event_stream import PairedEventStream
 
+TOKEN: str | None = None
 try:
     from .secrets import TOKEN
 except ImportError:
-    TOKEN = None
+    pass
 
 
 LOGGER = logging.getLogger(__name__)

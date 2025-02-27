@@ -128,15 +128,21 @@ class PairedEventStream:
                 unpaired_events[event.key] = event
             else:
                 del unpaired_events[event.partner_key]
-                yield tuple(sorted([event, partner_event], key=lambda e: e.is_spanish))
+                english_event, spanish_event = sorted(
+                    [event, partner_event], key=lambda e: e.is_spanish
+                )
+                yield english_event, spanish_event
 
         for event in unpaired_events.values():
-            partner_event: LAMetroAPIEvent | None = (
+            found_partner: LAMetroAPIEvent | None = (
                 self.find_partner(event) if self.find_missing_partner else None
             )
 
-            if partner_event:
-                yield tuple(sorted([event, partner_event], key=lambda e: e.is_spanish))
+            if found_partner:
+                english_event, spanish_event = sorted(
+                    [event, found_partner], key=lambda e: e.is_spanish
+                )
+                yield english_event, spanish_event
             elif event.is_spanish:
                 spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
                 event_date = datetime.datetime.strptime(
