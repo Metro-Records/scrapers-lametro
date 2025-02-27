@@ -10,10 +10,12 @@ import re
 from pupa.scrape.event import Event
 
 from lametro.events import (
-    LAMetroAPIEvent,
-    LAMetroWebEvent,
     DuplicateAgendaItemException,
     LametroEventScraper,
+)
+from lametro.paired_event_stream import (
+    LAMetroAPIEvent,
+    LAMetroWebEvent,
 )
 
 
