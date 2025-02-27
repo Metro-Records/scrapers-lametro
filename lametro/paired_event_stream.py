@@ -206,7 +206,7 @@ class PairedEventStream:
 
         return None
 
-    def raise_for_unpaired_spanish_event(self, event):
+    def raise_for_unpaired_spanish_event(self, event: LAMetroAPIEvent) -> None:
         spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
         event_date = datetime.datetime.strptime(event["EventDate"], "%Y-%m-%dT%H:%M:%S")
 
