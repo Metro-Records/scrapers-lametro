@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Generator, Iterable
+from typing import Generator
 
 from legistar.events import LegistarAPIEventScraper
 
@@ -143,7 +143,10 @@ class PairedEventStream(LegistarAPIEventScraper):
         for english_event, spanish_event in self.paired_events:
             event_details = []
             event_audio = []
-            event, web_event = self.scraper.event(english_event)
+            try:
+                event, web_event = self.scraper.event(english_event)
+            except TypeError:
+                LOGGER.warning("Event discarded by base scraper. Skipping...")
             event_details.append(
                 {
                     "url": web_event["Meeting Details"]["url"],
@@ -154,20 +157,24 @@ class PairedEventStream(LegistarAPIEventScraper):
                 event_audio.append(web_event["Meeting video"])
 
             if spanish_event:
-                partner, partner_web_event = self.scraper.event(spanish_event)
-                event["SAPEventId"] = partner["EventId"]
-                event["SAPEventGuid"] = partner["EventGuid"]
+                try:
+                    partner, partner_web_event = self.scraper.event(spanish_event)
+                except TypeError:
+                    LOGGER.warning("Event discarded by base scraper. Skipping...")
+                else:
+                    event["SAPEventId"] = partner["EventId"]
+                    event["SAPEventGuid"] = partner["EventGuid"]
 
-                event_details.append(
-                    {
-                        "url": partner_web_event["Meeting Details"]["url"],
-                        "note": "web (sap)",
-                    }
-                )
+                    event_details.append(
+                        {
+                            "url": partner_web_event["Meeting Details"]["url"],
+                            "note": "web (sap)",
+                        }
+                    )
 
-                if LAMetroWebEvent(partner_web_event).has_audio:
-                    partner_web_event["Meeting video"]["label"] = "Audio (SAP)"
-                    event_audio.append(partner_web_event["Meeting video"])
+                    if LAMetroWebEvent(partner_web_event).has_audio:
+                        partner_web_event["Meeting video"]["label"] = "Audio (SAP)"
+                        event_audio.append(partner_web_event["Meeting video"])
 
             event.update(
                 {
