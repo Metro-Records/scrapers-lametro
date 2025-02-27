@@ -73,7 +73,7 @@ class LAMetroAPIEventScraper(LegistarAPIEventScraper):
     TIMEZONE = "America/Los_Angeles"
 
 
-class PairedEventStream(LegistarAPIEventScraper):
+class PairedEventStream:
     """
     - Input: Stream of events that need to be paired
         - Deduplicate events
@@ -84,7 +84,7 @@ class PairedEventStream(LegistarAPIEventScraper):
     - Output: Stream of events that have been merged
     """
 
-    def __init__(self, events: list[dict], find_missing_partner: bool) -> None:
+    def __init__(self, events: list[dict], find_missing_partner: bool = True) -> None:
         self.events = (LAMetroAPIEvent(event) for event in events)
         self.find_missing_partner = find_missing_partner
 
@@ -134,7 +134,7 @@ class PairedEventStream(LegistarAPIEventScraper):
             if partner_event:
                 yield tuple(sorted([event, partner_event], key=lambda e: e.is_spanish))
             elif event.is_spanish:
-                self.log_unpaired_spanish_event(event)
+                self.raise_for_unpaired_spanish_event(event)
             else:
                 yield (event, None)
 
@@ -145,8 +145,10 @@ class PairedEventStream(LegistarAPIEventScraper):
             event_audio = []
             try:
                 event, web_event = self.scraper.event(english_event)
-            except TypeError:
+            except ValueError:
                 LOGGER.warning("Event discarded by base scraper. Skipping...")
+                continue
+
             event_details.append(
                 {
                     "url": web_event["Meeting Details"]["url"],
@@ -159,7 +161,7 @@ class PairedEventStream(LegistarAPIEventScraper):
             if spanish_event:
                 try:
                     partner, partner_web_event = self.scraper.event(spanish_event)
-                except TypeError:
+                except ValueError:
                     LOGGER.warning("Event discarded by base scraper. Skipping...")
                 else:
                     event["SAPEventId"] = partner["EventId"]
@@ -204,9 +206,11 @@ class PairedEventStream(LegistarAPIEventScraper):
 
         return None
 
-    def log_unpaired_spanish_event(self, event):
+    def raise_for_unpaired_spanish_event(self, event):
         spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
         event_date = datetime.datetime.strptime(event["EventDate"], "%Y-%m-%dT%H:%M:%S")
 
         if event_date > spanish_start_date and event.is_spanish:
-            LOGGER.critical("Could not find English event partner.")
+            raise ValueError(
+                f"Could not find English partner for Spanish event:\n{event}"
+            )

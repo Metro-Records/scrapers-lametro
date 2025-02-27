@@ -7,7 +7,12 @@ import pytest
 import requests_mock
 
 from lametro.events import DuplicateAgendaItemException, LametroEventScraper
-from lametro.paired_event_stream import LAMetroAPIEvent, LAMetroWebEvent
+from lametro.paired_event_stream import (
+    LAMetroAPIEvent,
+    LAMetroAPIEventScraper,
+    LAMetroWebEvent,
+    PairedEventStream,
+)
 
 
 @pytest.mark.parametrize(
@@ -38,7 +43,7 @@ def test_status_assignment(
         api_event["EventAgendaStatusName"] = api_status_name
 
         mocker.patch(
-            "lametro.LametroEventScraper._merge_events",
+            "lametro.paired_event_stream.PairedEventStream.merged_events",
             return_value=[(api_event, LAMetroWebEvent(web_event))],
         )
 
@@ -80,7 +85,7 @@ def test_sequence_duplicate_error(
         event_agenda_item_b["EventItemAgendaSequence"] = item_sequence
 
         mocker.patch(
-            "lametro.LametroEventScraper._merge_events",
+            "lametro.paired_event_stream.PairedEventStream.merged_events",
             return_value=[(api_event, LAMetroWebEvent(web_event))],
         )
         mocker.patch(
@@ -111,7 +116,14 @@ def test_sequence_duplicate_error(
                 assert len(event.agenda) == 2
 
 
-def test_events_paired(event_scraper, api_event, web_event, mocker):
+def test_events_paired(api_event, web_event, mocker):
+    mock_scraper = mocker.MagicMock(spec=LAMetroAPIEventScraper)
+    mock_scraper.event = lambda x: (x, web_event)
+
+    mocker.patch(
+        "lametro.paired_event_stream.LAMetroAPIEventScraper", return_value=mock_scraper
+    )
+
     # Create a matching SAP event with a distinct ID
     sap_api_event = api_event.copy()
     sap_api_event["EventId"] = 1109
@@ -126,30 +138,31 @@ def test_events_paired(event_scraper, api_event, web_event, mocker):
     another_api_event["EventBodyName"] = "Planning and Programming Committee"
 
     events = [
-        (LAMetroAPIEvent(api_event), web_event),
-        (LAMetroAPIEvent(sap_api_event), web_event),
-        (LAMetroAPIEvent(another_api_event), web_event),
+        api_event,
+        sap_api_event,
+        another_api_event,
     ]
 
-    results = event_scraper._merge_events(events)
+    results = list(PairedEventStream(events).merged_events)
 
     # Assert that the scraper yields two events
     assert len(results) == 2
 
     # Assert that the proper English and Spanish events were paired
-    event, web_event = results[0]
+    event, _ = results[0]
     assert event["EventId"] == api_event["EventId"]
     assert event["SAPEventId"] == sap_api_event["EventId"]
 
     # Add a duplicate SAP event to the event array
-    events.append((LAMetroAPIEvent(sap_api_event), web_event))
+    events.append(sap_api_event)
 
-    # Assert that duplicate SAP events raise an exception
+    # Assert duplicates raise an exception, not overwrite each other
     with pytest.raises(ValueError) as excinfo:
-        event_scraper._merge_events(events)
+        list(PairedEventStream(events).merged_events)
 
-        event_key = LAMetroAPIEvent(sap_api_event).key
-        assert "{} already exists as a key".format(event_key) in str(excinfo.value)
+    assert all(
+        substr in str(excinfo.value) for substr in ("Could not find English partner",)
+    )
 
 
 @pytest.mark.parametrize("test_case", ["a", "b", "c"])
