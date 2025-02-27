@@ -1,22 +1,13 @@
-from io import BytesIO
 import json
+import re
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 import requests_mock
-import requests
-import re
 
-from pupa.scrape.event import Event
-
-from lametro.events import (
-    DuplicateAgendaItemException,
-    LametroEventScraper,
-)
-from lametro.paired_event_stream import (
-    LAMetroAPIEvent,
-    LAMetroWebEvent,
-)
+from lametro.events import DuplicateAgendaItemException, LametroEventScraper
+from lametro.paired_event_stream import LAMetroAPIEvent, LAMetroWebEvent
 
 
 @pytest.mark.parametrize(
@@ -161,9 +152,7 @@ def test_events_paired(event_scraper, api_event, web_event, mocker):
         assert "{} already exists as a key".format(event_key) in str(excinfo.value)
 
 
-@pytest.mark.parametrize("test_case", [
-   "a", "b", "c"
-])
+@pytest.mark.parametrize("test_case", ["a", "b", "c"])
 def test_multiple_minutes_candidates_handling(event_scraper, api_event, test_case):
     """
     The minutes candidates fixture contains a number of test cases:

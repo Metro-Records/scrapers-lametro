@@ -1,23 +1,21 @@
 import datetime
-import logging
-import requests
 import io
-
-from sentry_sdk import capture_exception, capture_message
-
-from legistar.events import LegistarAPIEventScraper
-from pupa.scrape import Event, Scraper
+import logging
 
 import pdfplumber
-from pdfminer.pdfparser import PDFSyntaxError
 import pytesseract
+import requests
+from legistar.events import LegistarAPIEventScraper
+from pdfminer.pdfparser import PDFSyntaxError
 from PIL import Image
+from pupa.scrape import Event, Scraper
+from sentry_sdk import capture_exception, capture_message
 
 from .paired_event_stream import PairedEventStream
 
 try:
     from .secrets import TOKEN
-except:
+except ImportError:
     TOKEN = None
 
 
