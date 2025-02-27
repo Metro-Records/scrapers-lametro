@@ -107,9 +107,13 @@ class PairedEventStream:
 
         for event in sorted(self.events, key=lambda e: e.own_key):
             if event.own_key == last_key:
-                # Log duplicate event
-                continue
+                raise ValueError(
+                    f"Found duplicate event key '{event.own_key}'. Consider "
+                    "incorporating time back into event pairing."
+                )
+
             yield event
+            last_key = event.own_key
 
     @property
     def paired_events(
@@ -134,7 +138,15 @@ class PairedEventStream:
             if partner_event:
                 yield tuple(sorted([event, partner_event], key=lambda e: e.is_spanish))
             elif event.is_spanish:
-                self.raise_for_unpaired_spanish_event(event)
+                spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
+                event_date = datetime.datetime.strptime(
+                    event["EventDate"], "%Y-%m-%dT%H:%M:%S"
+                )
+
+                if event_date > spanish_start_date and event.is_spanish:
+                    raise ValueError(
+                        f"Could not find English partner for Spanish event:\n{event}"
+                    )
             else:
                 yield (event, None)
 
@@ -205,12 +217,3 @@ class PairedEventStream:
             return partner
 
         return None
-
-    def raise_for_unpaired_spanish_event(self, event: LAMetroAPIEvent) -> None:
-        spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
-        event_date = datetime.datetime.strptime(event["EventDate"], "%Y-%m-%dT%H:%M:%S")
-
-        if event_date > spanish_start_date and event.is_spanish:
-            raise ValueError(
-                f"Could not find English partner for Spanish event:\n{event}"
-            )
