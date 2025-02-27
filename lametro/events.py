@@ -16,6 +16,8 @@ from pdfminer.pdfparser import PDFSyntaxError
 import pytesseract
 from PIL import Image
 
+from .paired_event_stream import PairedEventStream
+
 try:
     from .secrets import TOKEN
 except:
@@ -213,6 +215,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             seen_keys = set()
             api_events = super(LametroEventScraper, self).api_events(*args, **kwargs)
             for event in api_events:
+                print(event["EventBodyName"], event["EventDate"])
                 la_event = LAMetroAPIEvent(event)
                 if la_event.own_key not in seen_keys:
                     yield la_event
@@ -359,13 +362,11 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             raise ValueError("Can't specify both window and event_ids")
 
         if event_ids:
-            api_events = (
-                self.event(self.get(f"{self.BASE_URL}/events/{id}").json())
+            events = (
+                self.get(f"{self.BASE_URL}/events/{id}").json()
                 for id in event_ids.split(",")
             )
-            events = itertools.chain.from_iterable(
-                self.event_pair(e) for e in api_events
-            )
+
         else:
             n_days_ago = None
 
@@ -374,7 +375,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                     float(window)
                 )
 
-            events = self._merge_events(self.events(since_datetime=n_days_ago))
+            events = self.api_events(since_datetime=n_days_ago)
 
         service_councils = set(
             sc["BodyId"]
@@ -383,7 +384,9 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             )
         )
 
-        for event, web_event in events:
+        for event, web_event in PairedEventStream(
+            events, find_missing_partner=window is not None
+        ):
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
