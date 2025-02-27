@@ -85,7 +85,7 @@ class PairedEventStream:
     """
 
     def __init__(self, events: list[dict], find_missing_partner: bool = True) -> None:
-        self.events = (LAMetroAPIEvent(event) for event in events)
+        self.events = [LAMetroAPIEvent(event) for event in events]
         self.find_missing_partner = find_missing_partner
 
     def __iter__(
