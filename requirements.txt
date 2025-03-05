@@ -11,3 +11,4 @@ sentry-sdk
 freezegun==1.5.1
 pdfplumber==0.11.3
 pytesseract==0.3.10
+levenshtein
