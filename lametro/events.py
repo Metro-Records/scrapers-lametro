@@ -4,6 +4,7 @@ import requests
 import io
 
 from sentry_sdk import capture_exception, capture_message
+from Levenshtein import distance
 
 from legistar.events import LegistarAPIEventScraper
 from pupa.scrape import Event, Scraper
@@ -590,24 +591,45 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                         if not cover_page_text:
                             # No extractable text found.
                             # Turn the page into an image and use OCR to get text.
-                            high_resolution = cover_page.to_image(resolution=300)
-                            loose_crop = cover_page.to_image(force_mediabox=True)
+                            cover_page_image = cover_page.to_image(resolution=300)
 
-                            for image_version in (high_resolution, loose_crop):
-                                with io.BytesIO() as in_mem_image:
-                                    image_version.save(in_mem_image)
-                                    in_mem_image.seek(0)
-                                    cover_page_text = pytesseract.image_to_string(
-                                        Image.open(in_mem_image)
+                            with io.BytesIO() as in_mem_image:
+                                cover_page_image.save(in_mem_image)
+                                in_mem_image.seek(0)
+                                cover_page_text = pytesseract.image_to_string(
+                                    Image.open(in_mem_image)
+                                )
+
+                            def edit_distance_lte_n(target, corpus, n):
+                                for line in corpus.splitlines():
+                                    _distance = distance(target, line)
+                                    self.debug(target, line, _distance)
+                                    if _distance <= n:
+                                        self.debug("FOUND MATCH")
+                                        return True
+                                else:
+                                    return False
+
+                            contains_minutes = "minutes" in cover_page_text.lower()
+                            contains_exact_body = (
+                                name.lower() in cover_page_text.lower()
+                            )
+                            contains_fuzzy_body = edit_distance_lte_n(
+                                name.lower(), cover_page_text.lower(), 2
+                            )
+
+                            if contains_minutes and (
+                                contains_exact_body or contains_fuzzy_body
+                            ):
+                                if contains_fuzzy_body:
+                                    self.info(
+                                        "Found minutes for the {0} meeting of {1} by fuzzy match: {2}".format(
+                                            name, date, attach
+                                        )
                                     )
-
-                                if all(
-                                    substr in cover_page_text.lower()
-                                    for substr in (name.lower(), "minutes")
-                                ):
-                                    yield attach
-                                    n_minutes += 1
-                                    break
+                                yield attach
+                                n_minutes += 1
+                                break
 
         if n_minutes == 0:
             self.warning(f"Couldn't find minutes for the {name} meeting of {date}.")
