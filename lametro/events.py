@@ -1,54 +1,26 @@
 import datetime
-import logging
-import requests
 import io
-
-from sentry_sdk import capture_exception, capture_message
-
-from legistar.events import LegistarAPIEventScraper
-from pupa.scrape import Event, Scraper
-from legistar.base import LegistarScraper
+import logging
 
 import pdfplumber
-from pdfminer.pdfparser import PDFSyntaxError
 import pytesseract
+import requests
+from legistar.events import LegistarAPIEventScraper
+from pdfminer.pdfparser import PDFSyntaxError
 from PIL import Image
+from pupa.scrape import Event, Scraper
+from sentry_sdk import capture_exception, capture_message
 
+from .paired_event_stream import PairedEventStream
+
+TOKEN: str | None = None
 try:
     from .secrets import TOKEN
-except:
-    TOKEN = None
+except ImportError:
+    pass
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-class UnmatchedEventError(Exception):
-    def __init__(self, events):
-        message_format = "Can't find companion for Event {0} at {1} on {2} - {3} {4}"
-        if type(events) is dict:
-            message = message_format.format(
-                events["EventId"],
-                events["EventTime"],
-                events["EventDate"],
-                EventInSiteURL["EventInSiteURL"],
-                "",
-            )
-        elif type(events) is list:
-            message = ""
-            for event in events:
-                temp = message_format.format(
-                    event["EventId"],
-                    event["EventTime"],
-                    event["EventDate"],
-                    event["EventInSiteURL"],
-                    "\n",
-                )
-                message += temp
-        else:
-            message = "Can't find companion event"
-
-        super().__init__(message)
 
 
 class DuplicateAgendaItemException(Exception):
@@ -86,191 +58,25 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if TOKEN:
             self.params = {"token": TOKEN}
 
-    def _pair_events(self, events):
-        paired_events = []
-        unpaired_events = {}
+    def scrape(self, window=None, event_ids=None):
+        if window and event_ids:
+            raise ValueError("Can't specify both window and event_ids")
 
-        for incoming_event in events:
-            try:
-                partner_event = unpaired_events[incoming_event.partner_key]
-            except KeyError:
-                unpaired_events[incoming_event.key] = incoming_event
-
-            else:
-                del unpaired_events[incoming_event.partner_key]
-                paired_events.append(incoming_event)
-                paired_events.append(partner_event)
-
-        return paired_events, unpaired_events.values()
-
-    def _find_partner(self, event):
-        """
-        Attempt to find other-language partner of an
-        event. Sometimes English events won't have Spanish
-        partners, but every Spanish event should have an
-        English partner.
-        """
-        results = list(self.search("/events/", "EventId", event.partner_search_string))
-        if results:
-            (partner,) = results
-            partner = LAMetroAPIEvent(partner)
-            assert event.is_partner(partner)
-            return partner
-
-        else:
-            if event.is_spanish:
-                LOGGER.critical("Could not find English event partner.")
-
-            return None
-
-    def api_events(self, *args, **kwargs):
-        """
-        For meetings, Metro provides an English audio recording and
-        sometimes a Spanish audio translation. Due to limitations with
-        the InSite system, multiple audio recordings can't be
-        associated with a single InSite event. So, Metro creates two
-        InSite event entries for the same actual event, one with the
-        English audio and the other with the Spanish audio. The Spanish
-        InSite event entry has the same name as the English event entry,
-        except the name is suffixed with ' (SAP)'.
-
-        We need to merge these companion events. In order to do that,
-        we must ensure that if we scrape one member of a pair, we also
-        scrape its partner.
-
-        This method subclasses the normal api_event method to ensure
-        that we get both members of pairs.
-        """
-        partial_scrape = kwargs.get("since_datetime", False)
-
-        def unique_events():
-            seen_keys = set()
-            api_events = super(LametroEventScraper, self).api_events(*args, **kwargs)
-            for event in api_events:
-                la_event = LAMetroAPIEvent(event)
-                if la_event.own_key not in seen_keys:
-                    yield la_event
-                    seen_keys.add(la_event.own_key)
-                else:
-                    self.warning(
-                        f"Found duplicate event {la_event['EventBodyName']} at "
-                        "https://webapi.legistar.com/v1/metro/events/"
-                        f"{la_event['EventId']}"
-                    )
-
-        paired, unpaired = self._pair_events(unique_events())
-
-        yield from paired
-
-        for unpaired_event in unpaired:
-            yield unpaired_event
-
-            # if are not getting every single event then it's possible
-            # that one member of a pair of English and Spanish will
-            # be included in the our partial scrape and the other
-            # member won't be. So, we try to find the partners for
-            # unpaired events.
-            #
-            # Spanish broadcasting didn't start until 5/16/2018, so we
-            # check the date of any unpaired events to make sure they
-            # should have a pair.
-
-            if partial_scrape:
-                partner_event = self._find_partner(unpaired_event)
-
-                spanish_start_date = datetime.datetime(2018, 5, 15, 0, 0, 0, 0)
-                event_date = datetime.datetime.strptime(
-                    unpaired_event["EventDate"], "%Y-%m-%dT%H:%M:%S"
-                )
-
-                if partner_event is not None:
-                    yield partner_event
-
-                elif event_date > spanish_start_date and unpaired_event.is_spanish:
-                    LOGGER.critical("Could not find English event partner.")
-
-    def _merge_events(self, events):
-        english_events = []
-        spanish_events = {}
-
-        for event, web_event in events:
-            web_event = LAMetroWebEvent(web_event)
-
-            if event.is_spanish:
-                try:
-                    assert event.key not in spanish_events
-                except AssertionError:
-                    # Don't allow SAP events to be overwritten in the event
-                    # dictionary. If this error is raised, there is more than
-                    # one SAP event for a meeting body on the same day, i.e.,
-                    # our event pairing criteria are too broad. Consider adding
-                    # back event time as a match constraint. See:
-                    # https://github.com/opencivicdata/scrapers-us-municipal/pull/284 &
-                    # https://github.com/opencivicdata/scrapers-us-municipal/pull/309.
-                    raise ValueError(
-                        "{0} already exists as a key with a value of {1}".format(
-                            event.key, spanish_events[event.key]
-                        )
-                    )
-                spanish_events[event.key] = (event, web_event)
-            else:
-                english_events.append((event, web_event))
-
-        for event, web_event in english_events:
-            event_details = []
-            event_audio = []
-
-            event_details.append(
-                {
-                    "url": web_event["Meeting Details"]["url"],
-                    "note": "web",
-                }
+        if event_ids:
+            events = (
+                self.get(f"{self.BASE_URL}/events/{id}").json()
+                for id in event_ids.split(",")
             )
 
-            if web_event.has_audio:
-                event_audio.append(web_event["Meeting video"])
-
-            matches = spanish_events.pop(event.partner_key, None)
-
-            if matches:
-                spanish_event, spanish_web_event = matches
-
-                event["SAPEventId"] = spanish_event["EventId"]
-                event["SAPEventGuid"] = spanish_event["EventGuid"]
-
-                event_details.append(
-                    {
-                        "url": spanish_web_event["Meeting Details"]["url"],
-                        "note": "web (sap)",
-                    }
-                )
-
-                if spanish_web_event.has_audio:
-                    spanish_web_event["Meeting video"]["label"] = "Audio (SAP)"
-                    event_audio.append(spanish_web_event["Meeting video"])
-
-            event["event_details"] = event_details
-            event["audio"] = event_audio
-
-        try:
-            assert (
-                not spanish_events
-            )  # These should all be merged with an English event.
-        except AssertionError:
-            unpaired_events = [event for event, _ in spanish_events.values()]
-            LOGGER.critical(
-                f"Found {len(unpaired_events)} Spanish event(s) without partners."
-            )
-
-        return english_events
-
-    def scrape(self, window=None):
-        if window and float(window) != 0:
-            n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(float(window))
         else:
             n_days_ago = None
 
-        events = self.events(since_datetime=n_days_ago)
+            if window and float(window) != 0:
+                n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(
+                    float(window)
+                )
+
+            events = self.api_events(since_datetime=n_days_ago)
 
         service_councils = set(
             sc["BodyId"]
@@ -279,7 +85,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             )
         )
 
-        for event, web_event in self._merge_events(events):
+        for event, web_event in PairedEventStream(events, find_missing_partner=True):
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
@@ -611,64 +417,3 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         if n_minutes == 0:
             self.warning(f"Couldn't find minutes for the {name} meeting of {date}.")
-
-
-class LAMetroAPIEvent(dict):
-    """
-    This class is for adding methods to the API event dict
-    to faciliate maching events with their other-language
-    partners.
-    """
-
-    @property
-    def is_spanish(self):
-        return self["EventBodyName"].endswith(" (SAP)")
-
-    @property
-    def own_key(self):
-        return (self["EventBodyName"], self["EventDate"])
-
-    @property
-    def _partner_name(self):
-        if self.is_spanish:
-            return self["EventBodyName"].rstrip(" (SAP)")
-        else:
-            return self["EventBodyName"] + " (SAP)"
-
-    def is_partner(self, other):
-        return (
-            self._partner_name == other["EventBodyName"]
-            and self["EventDate"] == other["EventDate"]
-        )
-
-    @property
-    def partner_search_string(self):
-        search_string = "EventBodyName eq '{}'".format(self._partner_name)
-        search_string += " and EventDate eq datetime'{}'".format(self["EventDate"])
-
-        return search_string
-
-    @property
-    def partner_key(self):
-        return (self._partner_name, self["EventDate"])
-
-    @property
-    def key(self):
-        return (self["EventBodyName"], self["EventDate"])
-
-
-class LAMetroWebEvent(dict):
-    """
-    This class is for adding methods to the web event dict
-    to facilitate labeling and sourcing audio appropriately.
-    """
-
-    web_scraper = LegistarScraper(retry_attempts=3, requests_per_minute=0)
-
-    @property
-    def has_audio(self):
-        return self["Meeting video"] != "Not\xa0available"
-
-    @property
-    def has_ecomment(self):
-        return self["eComment"] != "Not\xa0available"
