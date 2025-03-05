@@ -602,8 +602,8 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
                             def edit_distance_lte_n(target, corpus, n):
                                 for line in corpus.splitlines():
-                                    _distance = distance(target, line)
-                                    self.debug(target, line, _distance)
+                                    _distance = distance(target, line, score_cutoff=n)
+                                    self.debug(f"{target}, {line}, {_distance}")
                                     if _distance <= n:
                                         self.debug("FOUND MATCH")
                                         return True
