@@ -63,7 +63,7 @@ def web_event():
         "iCalendar": {"url": ""},
         "Meeting Location": "One Gateway Plaza, Los Angeles, CA 90012",
         "Recap/Minutes": "Not\xa0available",
-        "Meeting video": "A meeting video",
+        "Meeting video": {"label": "A meeting video"},
     }
 
     return web_event
