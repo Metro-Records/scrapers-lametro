@@ -13,7 +13,6 @@ from lametro.paired_event_stream import (
     LAMetroWebEvent,
     PairedEventStream,
 )
-from tests.conftest import api_event, web_event
 
 
 @pytest.mark.parametrize(
