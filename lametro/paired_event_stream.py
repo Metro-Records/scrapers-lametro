@@ -163,8 +163,10 @@ class PairedEventStream:
             event_audio = []
             try:
                 event, web_event = self.scraper.event(english_event)
-            except ValueError:
-                LOGGER.warning("Event discarded by base scraper. Skipping...")
+            except (ValueError, TypeError):
+                LOGGER.warning(
+                    "English event discarded by base scraper. Skipping event..."
+                )
                 continue
 
             event_details.append(
@@ -179,8 +181,10 @@ class PairedEventStream:
             if spanish_event:
                 try:
                     partner, partner_web_event = self.scraper.event(spanish_event)
-                except ValueError:
-                    LOGGER.warning("Event discarded by base scraper. Skipping...")
+                except (ValueError, TypeError):
+                    LOGGER.warning(
+                        "Spanish event discarded by base scraper. Skipping merge..."
+                    )
                 else:
                     event["SAPEventId"] = partner["EventId"]
                     event["SAPEventGuid"] = partner["EventGuid"]

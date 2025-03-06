@@ -13,6 +13,7 @@ from lametro.paired_event_stream import (
     LAMetroWebEvent,
     PairedEventStream,
 )
+from tests.conftest import api_event, web_event
 
 
 @pytest.mark.parametrize(
@@ -163,6 +164,54 @@ def test_events_paired(api_event, web_event, mocker):
         f"Found duplicate event key '{LAMetroAPIEvent(sap_api_event).own_key}'"
         in str(excinfo.value)
     )
+
+
+@pytest.mark.parametrize(
+    "side_effect,n_results",
+    [
+        ([None], 0),
+        ([("api_event", "web_event"), None], 1),
+    ],
+    ids=["english_event_discarded", "spanish_event_discarded"],
+)
+def test_discarded_event_handled(
+    request, api_event, mocker, caplog, side_effect, n_results
+):
+    mock_scraper = mocker.MagicMock(spec=LAMetroAPIEventScraper)
+    mock_scraper.event = mocker.MagicMock(spec=LAMetroAPIEventScraper.event)
+
+    mock_scraper.event.side_effect = [
+        tuple(request.getfixturevalue(x) for x in value) if value else None
+        for value in side_effect
+    ]
+
+    mocker.patch(
+        "lametro.paired_event_stream.LAMetroAPIEventScraper", return_value=mock_scraper
+    )
+
+    # Create a matching SAP event with a distinct ID
+    sap_api_event = api_event.copy()
+    sap_api_event["EventId"] = 1109
+    sap_api_event["EventBodyName"] = "{} (SAP)".format(api_event["EventBodyName"])
+
+    events = [
+        api_event,
+        sap_api_event,
+    ]
+
+    results = list(PairedEventStream(events).merged_events)
+
+    assert len(results) == n_results
+
+    (warning,) = caplog.records
+
+    if request.node.callspec.id == "english_event_discarded":
+        assert "English event discarded" in str(warning)
+    else:
+        assert "Spanish event discarded" in str(warning)
+        ((result, _),) = results
+        assert len(result["event_details"]) == 1
+        assert len(result["audio"]) == 1
 
 
 @pytest.mark.parametrize("test_case", ["a", "b", "c"])

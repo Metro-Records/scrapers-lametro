@@ -51,19 +51,21 @@ def web_event():
     Dictionary with pertinent info for a web_event.
     Corresponds with the event fixture above.
     '''
-    web_event = {'Meeting Details': {'label': 'Meeting\xa0details', 'url': ''}, 
-                 'Meeting Time': '9:30 AM', 
-                 'eComment': 'Not\xa0available', 
-                 'Published minutes': 'Not\xa0available', 
-                 'Name': {'label': 'Board of Directors - Regular Board Meeting', 'url': ''}, 
-                 'Meeting Date': '2/28/2019', 
-                 'Audio': {'label': 'Audio', 'url': ''},
-                 'Agenda': {'label': 'Agenda', 'url': ''}, 
-                 'iCalendar': {'url': ''}, 
-                 'Meeting Location': 'One Gateway Plaza, Los Angeles, CA 90012', 
-                 'Recap/Minutes': 'Not\xa0available',
-                 'Meeting video': 'Not\xa0available'}
-    
+    web_event = {
+        "Meeting Details": {"label": "Meeting\xa0details", "url": ""},
+        "Meeting Time": "9:30 AM",
+        "eComment": "Not\xa0available",
+        "Published minutes": "Not\xa0available",
+        "Name": {"label": "Board of Directors - Regular Board Meeting", "url": ""},
+        "Meeting Date": "2/28/2019",
+        "Audio": {"label": "Audio", "url": ""},
+        "Agenda": {"label": "Agenda", "url": ""},
+        "iCalendar": {"url": ""},
+        "Meeting Location": "One Gateway Plaza, Los Angeles, CA 90012",
+        "Recap/Minutes": "Not\xa0available",
+        "Meeting video": "A meeting video",
+    }
+
     return web_event
 
 @pytest.fixture
