@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Generator
+from typing import Generator, Optional
 
 from legistar.events import LegistarAPIEventScraper
 
@@ -105,11 +105,10 @@ class PairedEventStream:
     def unique_events(self) -> Generator[LAMetroAPIEvent, None, None]:
         last_key = None
 
-        for event in sorted(self.events, key=lambda e: e.own_key):
+        for event in sorted(self.public_events, key=lambda e: e.own_key):
             if event.own_key == last_key:
                 raise ValueError(
-                    f"Found duplicate event key '{event.own_key}'. Consider "
-                    "incorporating time back into event pairing."
+                    f"Found duplicate event key '{event.own_key}'. Skipping the following event...\n{event}."
                 )
 
             yield event
@@ -118,7 +117,7 @@ class PairedEventStream:
     @property
     def paired_events(
         self,
-    ) -> Generator[tuple[LAMetroAPIEvent, LAMetroAPIEvent | None], None, None]:
+    ) -> Generator[tuple[LAMetroAPIEvent, Optional[LAMetroAPIEvent]], None, None]:
         unpaired_events: dict[tuple[str, str], LAMetroAPIEvent] = {}
 
         for event in self.unique_events:
@@ -134,7 +133,7 @@ class PairedEventStream:
                 yield english_event, spanish_event
 
         for event in unpaired_events.values():
-            found_partner: LAMetroAPIEvent | None = (
+            found_partner: Optional[LAMetroAPIEvent] = (
                 self.find_partner(event) if self.find_missing_partner else None
             )
 
@@ -209,7 +208,7 @@ class PairedEventStream:
 
             yield event, web_event
 
-    def find_partner(self, event: LAMetroAPIEvent) -> LAMetroAPIEvent | None:
+    def find_partner(self, event: LAMetroAPIEvent) -> Optional[LAMetroAPIEvent]:
         """
         Attempt to find other-language partner of an
         event. Sometimes English events won't have Spanish
