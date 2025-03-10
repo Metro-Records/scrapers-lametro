@@ -80,8 +80,11 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             events = self.api_events(since_datetime=n_days_ago)
 
         public_events = filter(
-            lambda e: e.get("EventInSiteURL")
-            and self.head(e["EventInSiteURL"]).status_code == 200
+            (
+                lambda e: e.get("EventInSiteURL")
+                and self.head(e["EventInSiteURL"]).status_code == 200
+            ),
+            events,
         )
 
         service_councils = set(

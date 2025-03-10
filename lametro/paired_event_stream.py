@@ -105,7 +105,7 @@ class PairedEventStream:
     def unique_events(self) -> Generator[LAMetroAPIEvent, None, None]:
         last_key = None
 
-        for event in sorted(self.public_events, key=lambda e: e.own_key):
+        for event in sorted(self.events, key=lambda e: e.own_key):
             if event.own_key == last_key:
                 raise ValueError(
                     f"Found duplicate event key '{event.own_key}'. Skipping the following event...\n{event}."
