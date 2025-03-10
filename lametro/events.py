@@ -79,6 +79,14 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
             events = self.api_events(since_datetime=n_days_ago)
 
+        public_events = filter(
+            (
+                lambda e: e.get("EventInSiteURL")
+                and self.head(e["EventInSiteURL"]).status_code == 200
+            ),
+            events,
+        )
+
         service_councils = set(
             sc["BodyId"]
             for sc in self.search(
@@ -86,7 +94,9 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             )
         )
 
-        for event, web_event in PairedEventStream(events, find_missing_partner=True):
+        for event, web_event in PairedEventStream(
+            public_events, find_missing_partner=True
+        ):
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
