@@ -1,6 +1,7 @@
 import datetime
 import io
 import logging
+from typing import Generator, Optional
 
 import pdfplumber
 import pytesseract
@@ -14,7 +15,7 @@ from sentry_sdk import capture_exception, capture_message
 
 from .paired_event_stream import PairedEventStream
 
-TOKEN: str | None = None
+TOKEN: Optional[str] = None
 try:
     from .secrets import TOKEN
 except ImportError:
@@ -59,6 +60,25 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if TOKEN:
             self.params = {"token": TOKEN}
 
+    def filter(
+        self, events: Generator[dict, None, None]
+    ) -> Generator[dict, None, None]:
+        is_public = (
+            lambda e: e.get("EventInSiteURL")
+            and self.head(e["EventInSiteURL"]).status_code == 200
+        )
+
+        service_councils = set(
+            sc["BodyId"]
+            for sc in self.search(
+                "/bodies/", "BodyId", "BodyTypeId eq 70 or BodyTypeId eq 75"
+            )
+        )
+
+        is_not_service_council = lambda e: e["EventBodyId"] not in service_councils
+
+        yield from filter(lambda e: is_public(e) and is_not_service_council(e), events)
+
     def scrape(self, window=None, event_ids=None):
         if window and event_ids:
             raise ValueError("Can't specify both window and event_ids")
@@ -79,36 +99,13 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
             events = self.api_events(since_datetime=n_days_ago)
 
-        public_events = filter(
-            (
-                lambda e: e.get("EventInSiteURL")
-                and self.head(e["EventInSiteURL"]).status_code == 200
-            ),
-            events,
-        )
-
-        service_councils = set(
-            sc["BodyId"]
-            for sc in self.search(
-                "/bodies/", "BodyId", "BodyTypeId eq 70 or BodyTypeId eq 75"
-            )
-        )
-
         for event, web_event in PairedEventStream(
-            public_events, find_missing_partner=True
+            self.filter(events), find_missing_partner=True
         ):
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
                 body_name, event_name = [part.strip() for part in body_name.split("-")]
-            elif event["EventBodyId"] in service_councils:
-                # Don't scrape service council or service council public hearing events.
-                self.info(
-                    "Skipping event {0} for {1}".format(
-                        event["EventId"], event["EventBodyName"]
-                    )
-                )
-                continue
             else:
                 event_name = body_name
 
@@ -439,7 +436,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                             ):
                                 if contains_fuzzy_body:
                                     self.info(
-                                        "Found minutes for the {0} meeting of {1} by fuzzy match: {2}".format(
+                                        "Found minutes for the {0} meeting of {1} by fuzzy match: {2}".format(  # noqa
                                             name, date, attach
                                         )
                                     )
