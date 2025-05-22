@@ -60,6 +60,20 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if TOKEN:
             self.params = {"token": TOKEN}
 
+    def events(self, since_datetime, event_ids=None):
+        if event_ids:
+            events = (
+                self.get(f"{self.BASE_URL}/events/{id}").json()
+                for id in event_ids
+            )
+
+        else:
+            events = self.api_events(since_datetime=since_datetime)
+
+        yield from PairedEventStream(
+            self.filter(events), find_missing_partner=True
+        )
+
     def filter(
         self, events: Generator[dict, None, None]
     ) -> Generator[dict, None, None]:
@@ -83,25 +97,16 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
         if window and event_ids:
             raise ValueError("Can't specify both window and event_ids")
 
-        if event_ids:
-            events = (
-                self.get(f"{self.BASE_URL}/events/{id}").json()
-                for id in event_ids.split(",")
+        n_days_ago = None
+
+        if window and float(window) != 0:
+            n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(
+                float(window)
             )
 
-        else:
-            n_days_ago = None
+        event_ids = event_ids.split(",") if event_ids else None
 
-            if window and float(window) != 0:
-                n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(
-                    float(window)
-                )
-
-            events = self.api_events(since_datetime=n_days_ago)
-
-        for event, web_event in PairedEventStream(
-            self.filter(events), find_missing_partner=True
-        ):
+        for event, web_event in self.events(since_datetime=n_days_ago, event_ids=event_ids):
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
