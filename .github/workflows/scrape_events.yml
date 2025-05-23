@@ -57,7 +57,9 @@ jobs:
 
       - name: Arbitrary scrape
         if: github.event_name == 'workflow_dispatch'
-        run: pupa update lametro events window=${{ inputs.window }} --rpm=${{ inputs.rpm }}
+        run: |
+          echo $(pwd)
+          pupa update lametro events window=${{ inputs.window }} --rpm=${{ inputs.rpm }}
 
   keepalive:
     if: github.event_name == 'schedule'
