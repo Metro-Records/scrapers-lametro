@@ -1,6 +1,10 @@
 name: Scrape events
 
 on:
+  push:
+    branches:
+        - hcg/gh-actions-events
+
   schedule:
     - cron: '5 4 * * 0-4,6'  # At midnight, Sunday-Thursday and Saturday
     - cron: '0,15,30,45 * * * 0-4'  # Every 15 minutes, Sunday-Thursday
@@ -42,7 +46,7 @@ jobs:
 
   scrape:
     needs: skip_if_running
-    if: needs.skip_if_running.outputs.should_skip == 'false'
+    if: ${{ needs.skip_if_running.outputs.should_skip == 'false' && github.event_name != 'push' }}
     runs-on: ubuntu-latest
     container:
         image: ghcr.io/Metro-Records/scrapers-lametro:main
