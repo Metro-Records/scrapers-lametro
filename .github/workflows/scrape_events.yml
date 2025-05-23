@@ -19,10 +19,10 @@ on:
     inputs:
       window:
         description: How many days to scrape?
-        type: string
+        type: number
       rpm:
         description: How many requests per minute?
-        type: int
+        type: number
 
 concurrency:
   group: ${{ github.workflow }}
