@@ -19,10 +19,10 @@ on:
     inputs:
       window:
         description: How many days to scrape?
-        type: number
+        type: string
       rpm:
         description: How many requests per minute?
-        type: number
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}
@@ -57,7 +57,7 @@ jobs:
 
       - name: Arbitrary scrape
         if: github.event_name == 'workflow_dispatch'
-        run: pupa update lametro events window=${{ inputs.window }} --rpm=${{ inputs.window }}
+        run: pupa update lametro events window=${{ inputs.window }} --rpm=${{ inputs.rpm }}
 
   keepalive:
     if: github.event_name == 'schedule'
