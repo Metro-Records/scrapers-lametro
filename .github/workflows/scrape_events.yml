@@ -32,7 +32,7 @@ jobs:
     if: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
     container:
-        image: ghcr.io/Metro-Records/scrapers-lametro:main
+        image: ghcr.io/metro-records/scrapers-lametro:main
         env:
             DJANGO_SETTINGS_MODULE: pupa.settings
             DATABASE_URL: ${{ secrets.DATABASE_URL }}
