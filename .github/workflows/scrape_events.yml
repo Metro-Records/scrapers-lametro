@@ -39,6 +39,8 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Full scrape
         if: ${{ github.event.schedule == '5 4 * * 0-4,6' }}
         run: pupa update lametro events window=0 --rpm=60
