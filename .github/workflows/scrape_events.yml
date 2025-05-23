@@ -3,7 +3,7 @@ name: Scrape events
 on:
   push:
     branches:
-        - hcg/gh-actions-events
+      - hcg/gh-actions-events
 
   schedule:
     - cron: '5 4 * * 0-4,6'  # At midnight, Sunday-Thursday and Saturday
@@ -32,11 +32,11 @@ jobs:
     if: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
     container:
-        image: ghcr.io/metro-records/scrapers-lametro:main
-        env:
-            DJANGO_SETTINGS_MODULE: pupa.settings
-            DATABASE_URL: ${{ secrets.DATABASE_URL }}
-            SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      image: ghcr.io/metro-records/scrapers-lametro:main
+      env:
+          DJANGO_SETTINGS_MODULE: pupa.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
     steps:
       - name: Full scrape
