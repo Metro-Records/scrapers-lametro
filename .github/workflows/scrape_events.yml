@@ -30,9 +30,14 @@ concurrency:
 jobs:
   skip_if_running:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
     outputs:
       should_skip: ${{ steps.check.outputs.should_skip }}
     steps:
+      - name: Authenticate with GitHub CLI
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
       - name: Check for in-progress runs
         id: check
         run: |
@@ -41,8 +46,6 @@ jobs:
             echo "should_skip=true" >> $GITHUB_OUTPUT
           else
             echo "should_skip=false" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   scrape:
     needs: skip_if_running
