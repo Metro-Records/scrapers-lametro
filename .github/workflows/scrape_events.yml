@@ -1,0 +1,81 @@
+name: Scrape events
+
+on:
+  schedule:
+    - cron: '5 4 * * 0-4,6'  # At midnight, Sunday-Thursday and Saturday
+    - cron: '0,15,30,45 * * * 0-4'  # Every 15 minutes, Sunday-Thursday
+    - cron: '0,15,30,45 0-20 * * 5'  # Every 15 minutes until support window, Friday
+    - cron: '0 21-23 * * 5'  # At the top of the hour, Friday evening
+    - cron: '30,45 21-23 * * 5'  # At :30 and :45, Friday evening 
+    - cron: '0 0-5 * * 6'  # At the top of the hour, Saturday morning
+    - cron: '30,45 0-5 * * 6'  # At :30 and :45, Saturday morning
+    - cron: '0,15,30,45 6-23 * * 6'  # Every 15 minutes, Saturday
+
+  workflow_dispatch:
+    inputs:
+      window:
+        description: How many days to scrape?
+        type: string
+      rpm:
+        description: How many requests per minute?
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+    
+jobs:
+  skip_if_running:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.check.outputs.should_skip }}
+    steps:
+      - name: Check for in-progress runs
+        id: check
+        run: |
+          runs=$(gh run list --workflow="${{ github.workflow }}" --status="in_progress" --json status -q '.[].status')
+          if [[ -n "$runs" ]]; then
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  scrape:
+    needs: skip_if_running
+    if: needs.skip_if_running.outputs.should_skip == 'false'
+    runs-on: ubuntu-latest
+    container:
+        image: ghcr.io/Metro-Records/scrapers-lametro:main
+        env:
+            DJANGO_SETTINGS_MODULE: pupa.settings
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
+            SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+    steps:
+      - name: Full scrape
+        if: ${{ github.event.schedule == '5 4 * * 0-4,6' }}
+        run: pupa update lametro events window=0 --rpm=60
+
+      - name: Windowed scrape
+        if: ${{ contains(fromJSON('["0,15,30,45 * * * 0-4", "0,15,30,45 0-20 * * 5", "0,15,30,45 6-23 * * 6"]'), github.event.schedule) }}
+        run: pupa update lametro events window=0.05 --rpm=60
+
+      - name: Fast full scrape
+        if: ${{ contains(fromJSON('["0 21-23 * * 5", "0 0-5 * * 6"]'), github.event.schedule) }}
+        run: pupa update lametro events window=0 --rpm=0
+
+      - name: Fast windowed scrape
+        if: ${{ contains(fromJSON('["30,45 21-23 * * 5", "30,45 0-5 * * 6"]'), github.event.schedule) }}
+        run: pupa update lametro events window=1 --rpm=0
+
+      - name: Arbitrary scrape
+        if: github.event_name == 'workflow_dispatch'
+        run: pupa update lametro events window=${{ inputs.window }} --rpm=${{ inputs.window }}
+
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1  
