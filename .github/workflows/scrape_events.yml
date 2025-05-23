@@ -22,7 +22,7 @@ on:
         type: string
       rpm:
         description: How many requests per minute?
-        type: string
+        type: int
 
 concurrency:
   group: ${{ github.workflow }}
