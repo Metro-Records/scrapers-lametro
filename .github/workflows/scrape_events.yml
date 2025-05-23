@@ -41,13 +41,13 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Check for in-progress runs
-        id: check
         run: |
           runs=$(gh run list --workflow="${{ github.workflow }}" --status="in_progress" --json status -q '.[].status')
           if [[ -n "$runs" ]]; then
             echo "should_skip=true" >> $GITHUB_OUTPUT
           else
             echo "should_skip=false" >> $GITHUB_OUTPUT
+          fi
 
   scrape:
     needs: skip_if_running
