@@ -28,31 +28,8 @@ concurrency:
   group: ${{ github.workflow }}
     
 jobs:
-  skip_if_running:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-    outputs:
-      should_skip: ${{ steps.check.outputs.should_skip }}
-    steps:
-      - uses: actions/checkout@v4 
-
-      - name: Authenticate with GitHub CLI
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-
-      - name: Check for in-progress runs
-        run: |
-          runs=$(gh run list --workflow="${{ github.workflow }}" --status="in_progress" --json status -q '.[].status')
-          if [[ -n "$runs" ]]; then
-            echo "should_skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "should_skip=false" >> $GITHUB_OUTPUT
-          fi
-          echo "$runs"
-
   scrape:
-    needs: skip_if_running
-    if: ${{ needs.skip_if_running.outputs.should_skip == 'false' && github.event_name != 'push' }}
+    if: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
     container:
         image: ghcr.io/Metro-Records/scrapers-lametro:main
