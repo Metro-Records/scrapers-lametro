@@ -1,4 +1,4 @@
-name: Scrape bills
+name: 📑 Scrape bills
 
 on:
   push:
@@ -26,52 +26,56 @@ on:
       rpm:
         description: How many requests per minute?
         type: string
-
-concurrency:
-  group: ${{ github.workflow }}
     
 jobs:
-  scrape:
-    if: ${{ github.event_name != 'push' }}
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/metro-records/scrapers-lametro:main
-      env:
-          DJANGO_SETTINGS_MODULE: pupa.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
+  full_scrape:
+    if: ${{ github.event.schedule == '15 4 * * 0-4,6' }}
+    concurrency: 
+      group: full_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: bills
+      window: 0
+      rpm: 60
 
-    steps:
-      - uses: actions/checkout@v4
+  windowed_scrape:
+    if: ${{ contains(fromJSON('["5,20,35,50 * * * 0-4", "5,20,35,50 0-20 * * 5", "5,20,35,50 6-23 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: windowed_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: bills
+      window: 0.05
+      rpm: 60
 
-      - name: Full scrape
-        if: ${{ github.event.schedule == '15 4 * * 0-4,6' }}
-        run: pupa update lametro bills window=0 --rpm=60
+  fast_full_scrape:
+    if: ${{ contains(fromJSON('["5 21-23 * * 5", "5 0-5 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: full_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: bills
+      window: 0
+      rpm: 0
 
-      - name: Windowed scrape
-        if: ${{ contains(fromJSON('["5,20,35,50 * * * 0-4", "5,20,35,50 0-20 * * 5", "5,20,35,50 6-23 * * 6"]'), github.event.schedule) }}
-        run: pupa update lametro bills window=0.05 --rpm=60
+  fast_windowed_scrape:
+    if: ${{ contains(fromJSON('["35,50 21-23 * * 5", "35,50 0-5 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: windowed_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: bills
+      window: 1
+      rpm: 0
 
-      - name: Fast full scrape
-        if: ${{ contains(fromJSON('["5 21-23 * * 5", "5 0-5 * * 6"]'), github.event.schedule) }}
-        run: pupa update lametro bills window=0 --rpm=0
-
-      - name: Fast windowed scrape
-        if: ${{ contains(fromJSON('["35,50 21-23 * * 5", "35,50 0-5 * * 6"]'), github.event.schedule) }}
-        run: pupa update lametro bills window=1 --rpm=0
-
-      - name: Arbitrary scrape
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          pupa update lametro bills ${{ inputs.matter_ids && format('matter_ids={0}', inputs.matter_ids) || format('window={0}', inputs.window) }} --rpm=${{ inputs.rpm }} > scrape.log
-
-      - name: Create scrape summary
-        run: |
-          echo "### Scrape summary" >> $GITHUB_STEP_SUMMARY
-          while IFS= read -r line; do
-            echo "::notice ::$line" >> $GITHUB_STEP_SUMMARY
-          done < scrape.log
+  arbitrary_scrape:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: bills
+      object_ids: ${{ inputs.matter_ids }}
+      window: ${{ inputs.window }}
+      rpm: ${{ inputs.rpm }}
 
 
   keepalive:
