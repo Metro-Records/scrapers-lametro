@@ -12,6 +12,7 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+    env_file: ".env"
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres/opencivicdata
       DJANGO_SETTINGS_MODULE: pupa.settings

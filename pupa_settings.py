@@ -6,13 +6,14 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 
-sentry_logging = LoggingIntegration(level=logging.INFO, event_level=logging.FATAL)
+if SENTRY_DSN := os.getenv("SENTRY_DSN", "https://78df3855dad0415e99c3c327ea9f8126:a04d4bfe629a421aa2703a68e71f27dd@o13877.ingest.sentry.io/4504447849201664"):
+    sentry_logging = LoggingIntegration(level=logging.INFO, event_level=logging.FATAL)
 
-sentry_sdk.init(
-    dsn="https://78df3855dad0415e99c3c327ea9f8126:a04d4bfe629a421aa2703a68e71f27dd@o13877.ingest.sentry.io/4504447849201664",
-    integrations=[DjangoIntegration(), sentry_logging],
-    environment=os.getenv("SENTRY_ENVIRONMENT", "dev"),
-)
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), sentry_logging],
+        environment=os.getenv("SENTRY_ENVIRONMENT", "dev"),
+    )
 
 CACHE_DIR = "/tmp/cache/_cache"
 SCRAPED_DATA_DIR = "/tmp/cache/_data"
@@ -30,7 +31,6 @@ INSTALLED_APPS = (
     "pupa",
 )
 OCD_CITY_COUNCIL_NAME = None
-
 
 LOGGING = {
     "version": 1,

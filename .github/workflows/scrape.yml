@@ -1,0 +1,47 @@
+name: ⚙️ Scrape
+
+on:
+  workflow_call:
+    inputs:
+      object_type:
+        description: What objects to scrape (people, events, bills)?
+        type: string
+      object_ids:
+        description: Specific objects to scrape (comma-separated)?
+        type: string
+      window:
+        description: How many days to scrape?
+        type: string
+      rpm:
+        description: How many requests per minute?
+        type: string
+    secrets:
+      DATABASE_URL:
+        required: true
+      SENTRY_DSN:
+        required: false
+      LEGISTAR_API_TOKEN:
+        required: true
+    
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/metro-records/scrapers-lametro:main
+      env:
+        DJANGO_SETTINGS_MODULE: pupa.settings
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run scrape
+        run: pupa update lametro ${{ inputs.object_type }} ${{ inputs.object_ids && format('{0}_ids={1}', inputs.object_type == 'bills' && 'matter' || 'event', inputs.object_ids) || format('window={0}', inputs.window) }} --rpm=${{ inputs.rpm }} > scrape.log
+
+      - name: Store scrape summary
+        run: |
+          while IFS= read -r line; do
+            echo "$line" >> $GITHUB_STEP_SUMMARY
+          done < scrape.log

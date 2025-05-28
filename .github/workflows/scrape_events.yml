@@ -1,0 +1,93 @@
+name: 📆 Scrape events
+
+on:
+  push:
+    branches:
+      - hcg/gh-actions-events
+
+  schedule:
+    - cron: '5 4 * * 0-4,6'  # At 12:05a, Sunday-Thursday and Saturday
+    - cron: '0,15,30,45 * * * 0-4'  # Every 15 minutes, Sunday-Thursday
+    - cron: '0,15,30,45 0-20 * * 5'  # Every 15 minutes until support window, Friday
+    - cron: '0 21-23 * * 5'  # At the top of the hour, Friday evening
+    - cron: '30,45 21-23 * * 5'  # At :30 and :45, Friday evening 
+    - cron: '0 0-5 * * 6'  # At the top of the hour, Saturday morning
+    - cron: '30,45 0-5 * * 6'  # At :30 and :45, Saturday morning
+    - cron: '0,15,30,45 6-23 * * 6'  # Every 15 minutes, Saturday
+
+  workflow_dispatch:
+    inputs:
+      event_ids:
+        description: Specific events to scrape? (Comma-separated)
+        type: string
+      window:
+        description: How many days to scrape?
+        type: string
+      rpm:
+        description: How many requests per minute?
+        type: string
+        default: '0'
+    
+jobs:
+  full_scrape:
+    if: ${{ github.event.schedule == '5 4 * * 0-4,6' }}
+    concurrency: 
+      group: full_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 0
+      rpm: 60
+    secrets: inherit
+
+  windowed_scrape:
+    if: ${{ contains(fromJSON('["0,15,30,45 * * * 0-4", "0,15,30,45 0-20 * * 5", "0,15,30,45 6-23 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: windowed_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 0.05
+      rpm: 60
+    secrets: inherit
+
+  fast_full_scrape:
+    if: ${{ contains(fromJSON('["0 21-23 * * 5", "0 0-5 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: full_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 0
+      rpm: 0
+    secrets: inherit
+
+  fast_windowed_scrape:
+    if: ${{ contains(fromJSON('["30,45 21-23 * * 5", "30,45 0-5 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: windowed_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 1
+      rpm: 0
+    secrets: inherit
+
+  arbitrary_scrape:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      object_ids: ${{ inputs.event_ids }}
+      window: ${{ inputs.window }}
+      rpm: ${{ inputs.rpm }}
+    secrets: inherit
+
+
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1  

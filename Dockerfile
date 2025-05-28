@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM ubuntu:22.04 as builder
 
 # Clone and build Blackbox
 RUN apt-get update && apt-get install -y build-essential git-core && \
@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y build-essential git-core && \
     cd blackbox && \
     make copy-install
 
-FROM python:3.10
+FROM python:3.10-slim
 LABEL maintainer "DataMade <info@datamade.us>"
 
 ENV PYTHONUNBUFFERED=1

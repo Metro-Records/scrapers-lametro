@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import pytz
 import scrapelib
@@ -10,18 +11,16 @@ from sentry_sdk import capture_exception
 
 from .events import LametroEventScraper
 
+try:
+    from .secrets import TOKEN
+except ImportError:
+    TOKEN = os.getenv("LEGISTAR_API_TOKEN", "")
+
 
 class InvalidActionDateException(Exception):
     def __init__(self, matter_id, action_date):
         message = f"Invalid action date for {matter_id}: {action_date}"
         super().__init__(message)
-
-
-TOKEN: str | None = None
-try:
-    from .secrets import TOKEN
-except ImportError:
-    pass
 
 
 class LametroBillScraper(LegistarAPIBillScraper, Scraper):
