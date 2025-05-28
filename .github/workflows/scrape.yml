@@ -7,7 +7,7 @@ on:
         description: What objects to scrape (people, events, bills)?
         type: string
       object_ids:
-        description: Specific entities to scrape (comma-separated)?
+        description: Specific objects to scrape (comma-separated)?
         type: string
       window:
         description: How many days to scrape?
