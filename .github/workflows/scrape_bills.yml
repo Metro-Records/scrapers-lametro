@@ -1,0 +1,74 @@
+name: Scrape bills
+
+on:
+  push:
+    branches:
+      - hcg/gh-actions-events
+
+  schedule:
+    - cron: '15 4 * * 0-4,6'  # At 12:15a, Sunday-Thursday and Saturday
+    - cron: '5,20,35,50 * * * 0-4'  # Every 15 minutes, Sunday-Thursday
+    - cron: '5,20,35,50 0-20 * * 5'  # Every 15 minutes until support window, Friday
+    - cron: '5 21-23 * * 5'  # At 5 past the hour, Friday evening
+    - cron: '35,50 21-23 * * 5'  # At :35 and :50, Friday evening 
+    - cron: '5 0-5 * * 6'  # At 5 past the hour, Saturday morning
+    - cron: '35,50 0-5 * * 6'  # At :35 and :50, Saturday morning
+    - cron: '5,20,35,50 6-23 * * 6'  # Every 15 minutes, Saturday
+
+  workflow_dispatch:
+    inputs:
+      matter_ids:
+        description: Specific bills to scrape? (Comma-separated)
+        type: string
+      window:
+        description: How many days to scrape?
+        type: string
+      rpm:
+        description: How many requests per minute?
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+    
+jobs:
+  scrape:
+    if: ${{ github.event_name != 'push' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/metro-records/scrapers-lametro:main
+      env:
+          DJANGO_SETTINGS_MODULE: pupa.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Full scrape
+        if: ${{ github.event.schedule == '15 4 * * 0-4,6' }}
+        run: pupa update lametro bills window=0 --rpm=60
+
+      - name: Windowed scrape
+        if: ${{ contains(fromJSON('["5,20,35,50 * * * 0-4", "5,20,35,50 0-20 * * 5", "5,20,35,50 6-23 * * 6"]'), github.event.schedule) }}
+        run: pupa update lametro evebillsnts window=0.05 --rpm=60
+
+      - name: Fast full scrape
+        if: ${{ contains(fromJSON('["5 21-23 * * 5", "5 0-5 * * 6"]'), github.event.schedule) }}
+        run: pupa update lametro bills window=0 --rpm=0
+
+      - name: Fast windowed scrape
+        if: ${{ contains(fromJSON('["35,50 21-23 * * 5", "35,50 0-5 * * 6"]'), github.event.schedule) }}
+        run: pupa update lametro bills window=1 --rpm=0
+
+      - name: Arbitrary scrape
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          pupa update lametro bills ${{ inputs.matter_ids && format('matter_ids={0}', inputs.matter_ids) || format('window={0}', inputs.window) }} --rpm=${{ inputs.rpm }}
+
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1  

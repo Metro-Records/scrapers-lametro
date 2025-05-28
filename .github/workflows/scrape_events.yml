@@ -6,7 +6,7 @@ on:
       - hcg/gh-actions-events
 
   schedule:
-    - cron: '5 4 * * 0-4,6'  # At midnight, Sunday-Thursday and Saturday
+    - cron: '5 4 * * 0-4,6'  # At 12:05a, Sunday-Thursday and Saturday
     - cron: '0,15,30,45 * * * 0-4'  # Every 15 minutes, Sunday-Thursday
     - cron: '0,15,30,45 0-20 * * 5'  # Every 15 minutes until support window, Friday
     - cron: '0 21-23 * * 5'  # At the top of the hour, Friday evening
@@ -17,6 +17,9 @@ on:
 
   workflow_dispatch:
     inputs:
+      event_ids:
+        description: Specific events to scrape? (Comma-separated)
+        type: string
       window:
         description: How many days to scrape?
         type: string
@@ -60,8 +63,7 @@ jobs:
       - name: Arbitrary scrape
         if: github.event_name == 'workflow_dispatch'
         run: |
-          ls -lath
-          pupa update lametro events window=${{ inputs.window }} --rpm=${{ inputs.rpm }}
+          pupa update lametro events ${{ inputs.event_ids && format('event_ids={0}', inputs.event_ids) || format('window={0}', inputs.window) }} --rpm=${{ inputs.rpm }}
 
   keepalive:
     if: github.event_name == 'schedule'
