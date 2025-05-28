@@ -7,12 +7,20 @@ from legistar.bills import LegistarAPIBillScraper
 from pupa.scrape import Bill, Scraper, VoteEvent
 from pupa.utils import _make_pseudo_id
 
+from sentry_sdk import capture_exception
+
 from .events import LametroEventScraper
 
 try:
     from .secrets import TOKEN
 except ImportError:
     TOKEN = os.getenv("LEGISTAR_API_TOKEN", "")
+
+
+class InvalidActionDateException(Exception):
+    def __init__(self, matter_id, action_date):
+        message = f"Invalid action date for {matter_id}: {action_date}"
+        super().__init__(message)
 
 
 class LametroBillScraper(LegistarAPIBillScraper, Scraper):
@@ -74,7 +82,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
     def _show_attachment(self, attachment):
         return attachment["MatterAttachmentShowOnInternetPage"]
 
-    def session(self, action_date):
+    def session(self, matter_id, action_date):
         from . import Lametro
 
         localize = pytz.timezone(self.TIMEZONE).localize
@@ -87,7 +95,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             if localize(start_datetime) <= action_date <= localize(end_datetime):
                 return session["identifier"]
 
-        raise ValueError("Invalid action date: {}".format(action_date))
+        raise InvalidActionDateException(matter_id, action_date)
 
     def sponsorships(self, matter_id):
         for i, sponsor in enumerate(self.sponsors(matter_id)):
@@ -236,7 +244,12 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             if self._is_restricted(matter) and (date < self.START_DATE_PRIVATE_SCRAPE):
                 continue
 
-            bill_session = self.session(self.toTime(date))
+            try:
+                bill_session = self.session(matter_id, self.toTime(date))
+            except InvalidActionDateException as exc:
+                capture_exception(exc)
+                continue
+
             # Metro uses different classifications than OCD's controlled
             # vocabulary. We store that under extras -> local_classification.
             bill_type = None
@@ -347,8 +360,8 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                     continue
                 else:
                     date = related_bill["MatterIntroDate"]
-                    related_bill_session = self.session(self.toTime(date))
                     identifier = related_bill["MatterFile"]
+                    related_bill_session = self.session(identifier, self.toTime(date))
                     bill.add_related_bill(
                         identifier=identifier,
                         legislative_session=related_bill_session,
