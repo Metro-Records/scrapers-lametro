@@ -40,10 +40,8 @@ jobs:
       - name: Run scrape
         run: pupa update lametro ${{ inputs.object_type }} ${{ inputs.object_ids && format('{0}_ids={1}', inputs.object_type == 'bills' && 'matter' || 'event', inputs.object_ids) || format('window={0}', inputs.window) }} --rpm=${{ inputs.rpm }} > scrape.log
 
-      - name: Populate scrape summary
+      - name: Store scrape summary
         run: |
-          echo "```" >> $GITHUB_STEP_SUMMARY
           while IFS= read -r line; do
-            echo $line >> $GITHUB_STEP_SUMMARY
+            echo "$line" >> $GITHUB_STEP_SUMMARY
           done < scrape.log
-          echo "```" >> $GITHUB_STEP_SUMMARY
