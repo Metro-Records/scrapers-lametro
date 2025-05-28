@@ -15,4 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build containers and run tests
-        run: docker compose -f docker-compose.yml -f tests/docker-compose.yml run --rm scrapers
+        run: |
+          cp .env.example .env
+          docker compose -f docker-compose.yml -f tests/docker-compose.yml run --rm scrapers
