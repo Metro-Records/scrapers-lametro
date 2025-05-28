@@ -1,7 +1,8 @@
 import datetime
 import io
 import logging
-from typing import Generator, Optional
+from typing import Generator
+import os
 
 import pdfplumber
 import pytesseract
@@ -15,11 +16,10 @@ from sentry_sdk import capture_exception, capture_message
 
 from .paired_event_stream import PairedEventStream
 
-TOKEN: Optional[str] = None
 try:
     from .secrets import TOKEN
 except ImportError:
-    pass
+    TOKEN = os.getenv("LEGISTAR_API_TOKEN", "")
 
 
 LOGGER = logging.getLogger(__name__)

@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import pytz
 import scrapelib
@@ -8,11 +9,10 @@ from pupa.utils import _make_pseudo_id
 
 from .events import LametroEventScraper
 
-TOKEN: str | None = None
 try:
     from .secrets import TOKEN
 except ImportError:
-    pass
+    TOKEN = os.getenv("LEGISTAR_API_TOKEN", "")
 
 
 class LametroBillScraper(LegistarAPIBillScraper, Scraper):
