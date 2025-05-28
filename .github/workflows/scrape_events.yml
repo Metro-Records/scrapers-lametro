@@ -1,4 +1,4 @@
-name: Scrape events
+name: 📆 Scrape events
 
 on:
   push:
@@ -26,45 +26,77 @@ on:
       rpm:
         description: How many requests per minute?
         type: string
-
-concurrency:
-  group: ${{ github.workflow }}
     
 jobs:
-  scrape:
-    if: ${{ github.event_name != 'push' }}
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/metro-records/scrapers-lametro:main
-      env:
-          DJANGO_SETTINGS_MODULE: pupa.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
+  full_scrape:
+    if: ${{ github.event.schedule == '5 4 * * 0-4,6' }}
+    concurrency: 
+      group: full_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 0
+      rpm: 60
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
-    steps:
-      - uses: actions/checkout@v4
+  windowed_scrape:
+    if: ${{ contains(fromJSON('["0,15,30,45 * * * 0-4", "0,15,30,45 0-20 * * 5", "0,15,30,45 6-23 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: windowed_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 0.05
+      rpm: 60
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
-      - name: Full scrape
-        if: ${{ github.event.schedule == '5 4 * * 0-4,6' }}
-        run: pupa update lametro events window=0 --rpm=60
+  fast_full_scrape:
+    if: ${{ contains(fromJSON('["0 21-23 * * 5", "0 0-5 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: full_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 0
+      rpm: 0
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
-      - name: Windowed scrape
-        if: ${{ contains(fromJSON('["0,15,30,45 * * * 0-4", "0,15,30,45 0-20 * * 5", "0,15,30,45 6-23 * * 6"]'), github.event.schedule) }}
-        run: pupa update lametro events window=0.05 --rpm=60
+  fast_windowed_scrape:
+    if: ${{ contains(fromJSON('["30,45 21-23 * * 5", "30,45 0-5 * * 6"]'), github.event.schedule) }}
+    concurrency: 
+      group: windowed_scrape
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      window: 1
+      rpm: 0
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
-      - name: Fast full scrape
-        if: ${{ contains(fromJSON('["0 21-23 * * 5", "0 0-5 * * 6"]'), github.event.schedule) }}
-        run: pupa update lametro events window=0 --rpm=0
+  arbitrary_scrape:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: events
+      object_ids: ${{ inputs.event_ids }}
+      window: ${{ inputs.window }}
+      rpm: ${{ inputs.rpm }}
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
-      - name: Fast windowed scrape
-        if: ${{ contains(fromJSON('["30,45 21-23 * * 5", "30,45 0-5 * * 6"]'), github.event.schedule) }}
-        run: pupa update lametro events window=1 --rpm=0
-
-      - name: Arbitrary scrape
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          pupa update lametro events ${{ inputs.event_ids && format('event_ids={0}', inputs.event_ids) || format('window={0}', inputs.window) }} --rpm=${{ inputs.rpm }}
 
   keepalive:
     if: github.event_name == 'schedule'
