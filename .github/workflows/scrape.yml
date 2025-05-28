@@ -15,6 +15,12 @@ on:
       rpm:
         description: How many requests per minute?
         type: string
+    secrets:
+      DATABASE_URL:
+        required: true
+      LEGISTAR_API_TOKEN:
+        required: true
+      SENTRY_DSN:
     
 jobs:
   scrape:
@@ -22,10 +28,7 @@ jobs:
     container:
       image: ghcr.io/metro-records/scrapers-lametro:main
       env:
-          DJANGO_SETTINGS_MODULE: pupa.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
+        DJANGO_SETTINGS_MODULE: pupa.settings
 
     steps:
       - uses: actions/checkout@v4

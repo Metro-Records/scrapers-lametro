@@ -37,6 +37,10 @@ jobs:
       object_type: bills
       window: 0
       rpm: 60
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
   windowed_scrape:
     if: ${{ contains(fromJSON('["5,20,35,50 * * * 0-4", "5,20,35,50 0-20 * * 5", "5,20,35,50 6-23 * * 6"]'), github.event.schedule) }}
@@ -47,6 +51,10 @@ jobs:
       object_type: bills
       window: 0.05
       rpm: 60
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
   fast_full_scrape:
     if: ${{ contains(fromJSON('["5 21-23 * * 5", "5 0-5 * * 6"]'), github.event.schedule) }}
@@ -57,6 +65,10 @@ jobs:
       object_type: bills
       window: 0
       rpm: 0
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
   fast_windowed_scrape:
     if: ${{ contains(fromJSON('["35,50 21-23 * * 5", "35,50 0-5 * * 6"]'), github.event.schedule) }}
@@ -67,6 +79,10 @@ jobs:
       object_type: bills
       window: 1
       rpm: 0
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
   arbitrary_scrape:
     if: github.event_name == 'workflow_dispatch'
@@ -76,6 +92,10 @@ jobs:
       object_ids: ${{ inputs.matter_ids }}
       window: ${{ inputs.window }}
       rpm: ${{ inputs.rpm }}
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      LEGISTAR_API_TOKEN: ${{ secrets.LEGISTAR_API_TOKEN }}
 
 
   keepalive:
