@@ -7,7 +7,6 @@ import os
 import pdfplumber
 import pytesseract
 import requests
-# from legistar.events import LegistarAPIEventScraperZip
 from Levenshtein import distance
 from pdfminer.pdfparser import PDFSyntaxError
 from PIL import Image

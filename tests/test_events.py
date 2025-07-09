@@ -6,10 +6,10 @@ from pathlib import Path
 import pytest
 import requests_mock
 
+from lametro.base import LAMetroAPIEventScraper
 from lametro.events import DuplicateAgendaItemException, LametroEventScraper
 from lametro.paired_event_stream import (
     LAMetroAPIEvent,
-    LAMetroAPIEventScraper,
     LAMetroWebEvent,
     PairedEventStream,
 )
