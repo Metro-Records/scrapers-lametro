@@ -9,6 +9,7 @@ services:
     tty: true
     volumes:
       - .:/app
+    env_file: ".env"
     environment:
       # Populate the local Councilmatic database
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/lametro
