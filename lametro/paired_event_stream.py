@@ -109,7 +109,6 @@ class PairedEventStream:
             scraper = LAMetroAPIWebEventScraper()
             scraper.retry_attempts = 3
             scraper.requests_per_minute = 0
-            print(scraper.params)
             self._scraper = scraper
         return self._scraper
 
