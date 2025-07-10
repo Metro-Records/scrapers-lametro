@@ -9,6 +9,7 @@ services:
     tty: true
     volumes:
       - .:/app
+      - scrapers-cache:/tmp/cache
     env_file: ".env"
     environment:
       # Populate the local Councilmatic database
@@ -19,6 +20,9 @@ services:
     # Connect the scraper container to the app network
     networks:
       - app_net
+
+volumes:
+  scrapers-cache:
 
 networks:
   # Define connection to the app's Docker network
