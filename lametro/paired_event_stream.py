@@ -100,9 +100,9 @@ class PairedEventStream:
 
     def __iter__(
         self,
-    ) -> Generator[tuple[LAMetroAPIEvent, LAMetroWebEventDetail], None, None]:
+    ) -> Generator[tuple[LAMetroAPIEvent, LAMetroWebEventDetail | LAMetroWebCalendarEvent], None, None]:
         for event, web_event in self.merged_events:
-            yield LAMetroAPIEvent(event), LAMetroWebEventDetail(web_event)
+            yield LAMetroAPIEvent(event), LAMetroWebEvent(web_event)
 
     @property
     def scraper(self):
