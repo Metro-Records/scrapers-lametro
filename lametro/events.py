@@ -7,13 +7,13 @@ import os
 import pdfplumber
 import pytesseract
 import requests
-from legistar.events import LegistarAPIEventScraper
 from Levenshtein import distance
 from pdfminer.pdfparser import PDFSyntaxError
 from PIL import Image
 from pupa.scrape import Event, Scraper
 from sentry_sdk import capture_exception, capture_message
 
+from .base import LAMetroAPIWebEventScraper
 from .paired_event_stream import PairedEventStream
 
 try:
@@ -48,18 +48,7 @@ class MissingAttachmentsException(Exception):
         super().__init__(message)
 
 
-class LametroEventScraper(LegistarAPIEventScraper, Scraper):
-    BASE_URL = "https://webapi.legistar.com/v1/metro"
-    WEB_URL = "https://metro.legistar.com/"
-    EVENTSPAGE = "https://metro.legistar.com/Calendar.aspx"
-    TIMEZONE = "America/Los_Angeles"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if TOKEN:
-            self.params = {"token": TOKEN}
-
+class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
     def events(self, since_datetime, event_ids=None):
         if event_ids:
             events = (
@@ -71,17 +60,12 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
             events = self.api_events(since_datetime=since_datetime)
 
         yield from PairedEventStream(
-            self.filter(events), find_missing_partner=True
+            self.filter(events), find_missing_partner=since_datetime is not None
         )
 
     def filter(
         self, events: Generator[dict, None, None]
     ) -> Generator[dict, None, None]:
-        is_public = (
-            lambda e: e.get("EventInSiteURL")
-            and self.head(e["EventInSiteURL"]).status_code == 200
-        )
-
         service_councils = set(
             sc["BodyId"]
             for sc in self.search(
@@ -91,7 +75,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
 
         is_not_service_council = lambda e: e["EventBodyId"] not in service_councils
 
-        yield from filter(lambda e: is_public(e) and is_not_service_council(e), events)
+        yield from filter(lambda e: is_not_service_council(e), events)
 
     def scrape(self, window=None, event_ids=None):
         if window and event_ids:
@@ -232,7 +216,7 @@ class LametroEventScraper(LegistarAPIEventScraper, Scraper):
                         event["EventMinutesLastPublishedUTC"]
                     ).date(),
                 )
-            elif web_event["Published minutes"] != "Not\xa0available":
+            elif "Published minutes" in web_event and web_event["Published minutes"] != "Not\xa0available":
                 e.add_document(
                     note=web_event["Published minutes"]["label"],
                     url=web_event["Published minutes"]["url"],

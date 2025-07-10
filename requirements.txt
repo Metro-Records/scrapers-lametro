@@ -1,5 +1,5 @@
 https://github.com/opencivicdata/pupa/archive/master.zip
-https://github.com/opencivicdata/python-legistar-scraper/archive/hcg/tweaks.zip
+https://github.com/opencivicdata/python-legistar-scraper/archive/hcg/events.zip
 https://github.com/datamade/scrapelib/archive/hcg/accept-response.zip
 django-councilmatic==3.2
 lxml
