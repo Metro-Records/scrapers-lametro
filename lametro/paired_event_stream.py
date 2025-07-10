@@ -52,7 +52,7 @@ class LAMetroAPIEvent(dict):
 
 
 def LAMetroWebEvent(event_dict):
-    if "Published minutes" in event_dict:
+    if "Meeting video" in event_dict:
         return LAMetroWebEventDetail(event_dict)
     else:
         return LAMetroWebCalendarEvent(event_dict)
@@ -63,23 +63,24 @@ class LAMetroWebEventDetail(dict):
     This class is for adding methods to the web event dict
     to facilitate labeling and sourcing audio appropriately.
     """
+    AUDIO_KEY = "Meeting video"
+    ECOMMENT_KEY = "eComment"
+
     @property
     def has_web_link(self):
         return isinstance(self["Meeting Details"], dict)
 
     @property
     def has_audio(self):
-        return self["Meeting video"] != "Not\xa0available"
+        return self[self.AUDIO_KEY] != "Not\xa0available"
 
     @property
     def has_ecomment(self):
-        return self["eComment"] != "Not\xa0available"
+        return self[self.ECOMMENT_KEY] != "Not\xa0available"
 
 
 class LAMetroWebCalendarEvent(LAMetroWebEventDetail):
-    @property
-    def has_audio(self):
-        return self["Audio"] != "Not\xa0available"
+    AUDIO_KEY = "Audio"
 
 
 class PairedEventStream:
@@ -190,7 +191,7 @@ class PairedEventStream:
                 )
 
             if en_web_event.has_audio:
-                event_audio.append(web_event["Meeting video"])
+                event_audio.append(web_event[en_web_event.AUDIO_KEY])
 
             if spanish_event:
                 try:
@@ -214,8 +215,8 @@ class PairedEventStream:
                         )
 
                     if sap_web_event.has_audio:
-                        partner_web_event["Meeting video"]["label"] = "Audio (SAP)"
-                        event_audio.append(partner_web_event["Meeting video"])
+                        partner_web_event[sap_web_event.AUDIO_KEY]["label"] = "Audio (SAP)"
+                        event_audio.append(partner_web_event[sap_web_event.AUDIO_KEY])
 
             event.update(
                 {
