@@ -60,7 +60,7 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
             events = self.api_events(since_datetime=since_datetime)
 
         yield from PairedEventStream(
-            self.filter(events), find_missing_partner=True
+            self.filter(events), find_missing_partner=since_datetime is not None
         )
 
     def filter(

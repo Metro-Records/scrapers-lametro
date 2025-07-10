@@ -1,7 +1,9 @@
+from dateutil import parser
 import logging
 import os
+import pytz
 
-from legistar.events import LegistarAPIEventScraper, WebCalendarMixin
+from legistar.events import LegistarAPIEventScraper, WebCalendarFallbackMixin
 from scrapelib import Scraper
 
 try:
@@ -13,7 +15,7 @@ except ImportError:
 LOGGER = logging.getLogger(__name__)
 
 
-class LAMetroAPIWebEventScraper(WebCalendarMixin, LegistarAPIEventScraper, Scraper):
+class LAMetroAPIWebEventScraper(WebCalendarFallbackMixin, LegistarAPIEventScraper, Scraper):
     BASE_URL = "https://webapi.legistar.com/v1/metro"
     WEB_URL = "https://metro.legistar.com/"
     EVENTSPAGE = "https://metro.legistar.com/Calendar.aspx"
@@ -31,20 +33,19 @@ class LAMetroAPIWebEventScraper(WebCalendarMixin, LegistarAPIEventScraper, Scrap
     def _not_in_web_interface(self, api_event):
         return api_event["EventBodyName"] == "OCEO Draft Review"
     
-    def _get_web_event(self, api_event):
+    def _event_key(self, event):
         """
-        Detail pages for Metro events are not available until agendas are
-        finalized. Prior to agendas being finalized, consult the web calendar
-        to confirm the meeting is public so we can scrape it before its
-        detail page becomes available.
+        The base scraper parses the event time from the related calendar
+        event, but issues a request to every single one, which takes a
+        really long time. Parse the date and time from the event instead.
         """
-        if self._not_in_web_interface(api_event):
-            LOGGER.debug(f"Skipping web check for {api_event}")
-            return None
-        
-        if self._detail_page_not_available(api_event):
-            LOGGER.debug(f"Checking web calendar for {api_event}")
-            return self.web_results(api_event)
+        event_time = pytz.timezone(self.TIMEZONE).localize(
+            parser.parse(
+                f"{event['Meeting Date']} {event['Meeting Time']}", 
+                fuzzy=True
+            )
+        )
 
-        LOGGER.debug(f"Checking detail link for {api_event}")
-        return self.web_detail(api_event)
+        key = (event['Name']['label'], event_time)
+
+        return key

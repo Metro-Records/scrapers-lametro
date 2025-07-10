@@ -119,7 +119,7 @@ class PairedEventStream:
 
         for event in sorted(self.events, key=lambda e: e.own_key):
             if event.own_key == last_key:
-                raise ValueError(
+                LOGGER.warning(
                     f"Found duplicate event key '{event.own_key}'. Skipping the following event...\n{event}."
                 )
 

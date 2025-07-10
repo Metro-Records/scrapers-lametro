@@ -12,6 +12,7 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+      - scrapers-cache:/tmp/cache
     env_file: ".env"
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres/opencivicdata
@@ -37,3 +38,4 @@ services:
 
 volumes:
   scrapers-lametro-db-data:
+  scrapers-cache:
