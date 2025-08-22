@@ -2,23 +2,11 @@ name: 🪟 Windowed Scrape
 
 on:
   schedule:
-    - cron: '5,20,35,50 * * * 0-4'      # Every 15 minutes bills, Sunday-Thursday
-    - cron: '5,20,35,50 0-20 * * 5'     # Every 15 minutes bills until support window, Friday
-    - cron: '5,20,35,50 6-23 * * 6'     # Every 15 minutes bills, Saturday
-    - cron: '0,15,30,45 * * * 0-4'      # Every 15 minutes events, Sunday-Thursday
-    - cron: '0,15,30,45 0-20 * * 5'     # Every 15 minutes events until support window, Friday
-    - cron: '0,15,30,45 6-23 * * 6'     # Every 15 minutes events, Saturday
+    - cron: '0,15,30,45 * * * 0-4'      # Every 15 minutes, Sunday-Thursday
+    - cron: '0,15,30,45 0-20 * * 5'     # Every 15 minutes until support window, Friday
+    - cron: '0,15,30,45 6-23 * * 6'     # Every 15 minutes after support window, Saturday
 
   workflow_dispatch:
-    inputs:
-      window:
-        description: How many days to scrape?
-        type: string
-        default: '0.05'
-      rpm:
-        description: How many requests per minute?
-        type: string
-        default: '60'
     
 jobs:
   scrape_bills:
@@ -27,8 +15,8 @@ jobs:
     uses: ./.github/workflows/scrape.yml
     with:
       object_type: bills
-      window: ${{ inputs.window || '0.05' }}
-      rpm: ${{ inputs.rpm || '60' }}
+      window: '0.05'
+      rpm: '60'
     secrets: inherit
 
   scrape_events:
@@ -38,8 +26,8 @@ jobs:
     uses: ./.github/workflows/scrape.yml
     with:
       object_type: events
-      window: ${{ inputs.window || '0.05' }}
-      rpm: ${{ inputs.rpm || '60' }}
+      window: '0.05'
+      rpm: '60'
     secrets: inherit
 
   keepalive:

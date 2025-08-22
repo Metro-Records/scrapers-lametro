@@ -6,11 +6,6 @@ on:
     - cron: '0 0-5 * * 6'     # At the top of the hour, Saturday morning
 
   workflow_dispatch:
-    inputs:
-      rpm:
-        description: How many requests per minute?
-        type: string
-        default: '0'
     
 jobs:
   scrape_bills:
@@ -19,8 +14,8 @@ jobs:
     uses: ./.github/workflows/scrape.yml
     with:
       object_type: bills
-      window: 0
-      rpm: ${{ inputs.rpm || '0' }}
+      window: '0'
+      rpm: '0'
     secrets: inherit
 
   scrape_events:
@@ -30,8 +25,8 @@ jobs:
     uses: ./.github/workflows/scrape.yml
     with:
       object_type: events
-      window: 0
-      rpm: ${{ inputs.rpm || '0' }}
+      window: '0'
+      rpm: '0'
     secrets: inherit
 
   keepalive:

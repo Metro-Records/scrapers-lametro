@@ -2,15 +2,9 @@ name: 🔄 Full Scrape
 
 on:
   schedule:
-    - cron: '15 4 * * 0-4,6'  # At 12:15a bills, Sunday-Thursday and Saturday
-    - cron: '5 4 * * 0-4,6'   # At 12:05a events, Sunday-Thursday and Saturday
+    - cron: '5 4 * * 0-4,6'   # At 12:05a, Sunday-Thursday and Saturday
 
   workflow_dispatch:
-    inputs:
-      rpm:
-        description: How many requests per minute?
-        type: string
-        default: '60'
     
 jobs:
   scrape_bills:
@@ -19,8 +13,8 @@ jobs:
     uses: ./.github/workflows/scrape.yml
     with:
       object_type: bills
-      window: 0
-      rpm: ${{ inputs.rpm || '60' }}
+      window: '0'
+      rpm: '60'
     secrets: inherit
 
   scrape_events:
@@ -30,8 +24,8 @@ jobs:
     uses: ./.github/workflows/scrape.yml
     with:
       object_type: events
-      window: 0
-      rpm: ${{ inputs.rpm || '60' }}
+      window: '0'
+      rpm: '60'
     secrets: inherit
 
   keepalive:

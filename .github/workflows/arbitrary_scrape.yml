@@ -1,4 +1,4 @@
-name: 🎯 Scrape Specific Items
+name: 🎯 Run Arbitrary Scrape
 
 on:
   workflow_dispatch:
