@@ -1,0 +1,43 @@
+name: 🎯 Scrape Specific Items
+
+on:
+  workflow_dispatch:
+    inputs:
+      object_type:
+        description: What to scrape (bills or events)?
+        type: choice
+        options:
+          - bills
+          - events
+        default: bills
+      object_ids:
+        description: Specific items to scrape (comma-separated)
+        type: string
+      window:
+        description: How many days to scrape?
+        type: string
+      rpm:
+        description: How many requests per minute?
+        type: string
+        default: '0'
+    
+jobs:
+  validate_inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        run: |
+          if [[ -z "${{ inputs.object_ids }}" && -z "${{ inputs.window }}" ]]; then
+            echo "Error: Either object_ids or window must be provided"
+            exit 1
+          fi
+
+  arbitrary_scrape:
+    needs: validate_inputs
+    uses: ./.github/workflows/scrape.yml
+    with:
+      object_type: ${{ inputs.object_type }}
+      object_ids: ${{ inputs.object_ids }}
+      window: ${{ inputs.window }}
+      rpm: ${{ inputs.rpm }}
+    secrets: inherit
