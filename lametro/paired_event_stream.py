@@ -174,7 +174,7 @@ class PairedEventStream:
             event_audio = []
             try:
                 event, web_event = self.scraper.event(english_event)
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError, IndexError) as e:
                 LOGGER.warning(
                     f"English event discarded by base scraper due to the following error: {e}"
                 )
@@ -196,7 +196,7 @@ class PairedEventStream:
             if spanish_event:
                 try:
                     partner, partner_web_event = self.scraper.event(spanish_event)
-                except (ValueError, TypeError):
+                except (ValueError, TypeError, IndexError):
                     LOGGER.warning(
                         "Spanish event discarded by base scraper. Skipping merge..."
                     )
