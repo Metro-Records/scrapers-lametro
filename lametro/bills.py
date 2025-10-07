@@ -127,7 +127,10 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                 continue
             action_date = action["MatterHistoryActionDate"]
             responsible_org = action["MatterHistoryActionBodyName"].strip()
-            if responsible_org == "Board of Directors - Regular Board Meeting":
+            if responsible_org in (
+                "Board of Directors - Regular Board Meeting",
+                "Board of Directors - Special Board Meeting",
+            ):
                 responsible_org = "Board of Directors"
 
             if all((action_date, action_description, responsible_org)):
