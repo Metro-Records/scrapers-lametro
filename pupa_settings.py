@@ -32,6 +32,10 @@ INSTALLED_APPS = (
 )
 OCD_CITY_COUNCIL_NAME = None
 
+IMPORTER_CLASSES = {
+    "BillImporter": "importers.la_metro_bills.LAMetroBillImporter",    
+}
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
