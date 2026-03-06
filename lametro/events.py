@@ -230,7 +230,7 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                 # Older events can sometimes have a scanned published minutes file.
                 # In that case, we'll need to search for a more readable
                 # approved minutes file.
-                event_date = datetime.datetime.fromisoformat(e["EventDate"])
+                event_date = datetime.datetime.fromisoformat(event["EventDate"])
                 old_event = event_date < datetime.datetime(2017, 1, 1)
 
                 is_scanned = False
@@ -244,7 +244,9 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                             if len(page.chars) <= 0:
                                 is_scanned = True
 
-                if not is_scanned:
+                if is_scanned:
+                    self.warning(f"Found scanned minutes file for event {event['EventId']}...")
+                else:
                     e.add_document(
                         note=web_event["Published minutes"]["label"],
                         url=web_event["Published minutes"]["url"],
@@ -255,6 +257,7 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
             if not found_minutes:
                 approved_minutes = self.find_approved_minutes(event)
                 for minutes in approved_minutes:
+                    self.info(f"Found approved minutes for event {event['EventId']}: {minutes['MatterAttachmentHyperlink']}")
                     e.add_document(
                         note=minutes["MatterAttachmentName"],
                         url=minutes["MatterAttachmentHyperlink"],
