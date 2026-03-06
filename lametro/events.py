@@ -207,7 +207,16 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
             # in case this event's minutes haven't been approved yet
             e.extras["approved_minutes"] = False
 
-            if event["EventMinutesFile"]:
+            has_minutes_file = event["EventMinutesFile"]
+
+            web_event_has_published_minutes = (
+                "Published minutes" in web_event
+                and web_event["Published minutes"] != "Not\xa0available"
+            )
+
+            found_minutes = False
+
+            if has_minutes_file:
                 e.add_document(
                     note="Minutes",
                     url=event["EventMinutesFile"],
@@ -216,13 +225,34 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                         event["EventMinutesLastPublishedUTC"]
                     ).date(),
                 )
-            elif "Published minutes" in web_event and web_event["Published minutes"] != "Not\xa0available":
-                e.add_document(
-                    note=web_event["Published minutes"]["label"],
-                    url=web_event["Published minutes"]["url"],
-                    media_type="application/pdf",
-                )
-            else:
+                found_minutes = True
+            elif web_event_has_published_minutes:
+                # Older events can sometimes have a scanned published minutes file.
+                # In that case, we'll need to search for a more readable
+                # approved minutes file.
+                event_date = datetime.datetime.fromisoformat(e["EventDate"])
+                old_event = event_date < datetime.datetime(2017, 1, 1)
+
+                is_scanned = False
+                if old_event:
+                    response = requests.get(web_event["Published minutes"]["url"])
+
+                    with io.BytesIO(response.content) as filestream:
+                        with pdfplumber.open(filestream) as pdf:
+                            # Check the first page for text
+                            page = pdf.pages[0]
+                            if len(page.chars) <= 0:
+                                is_scanned = True
+
+                if not is_scanned:
+                    e.add_document(
+                        note=web_event["Published minutes"]["label"],
+                        url=web_event["Published minutes"]["url"],
+                        media_type="application/pdf",
+                    )
+                    found_minutes = True
+
+            if not found_minutes:
                 approved_minutes = self.find_approved_minutes(event)
                 for minutes in approved_minutes:
                     e.add_document(
