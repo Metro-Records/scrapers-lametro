@@ -207,7 +207,20 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
             # in case this event's minutes haven't been approved yet
             e.extras["approved_minutes"] = False
 
-            if event["EventMinutesFile"]:
+            has_minutes_file = event["EventMinutesFile"]
+
+            web_event_has_published_minutes = (
+                "Published minutes" in web_event
+                and web_event["Published minutes"] != "Not\xa0available"
+            )
+
+            # Events can sometimes have a scanned published minutes file.
+            # In that case, we'll need to search for a more readable
+            # digital approved minutes file.
+            scanned_minutes = {}
+
+            found_minutes = False
+            if has_minutes_file:
                 e.add_document(
                     note="Minutes",
                     url=event["EventMinutesFile"],
@@ -216,15 +229,32 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                         event["EventMinutesLastPublishedUTC"]
                     ).date(),
                 )
-            elif "Published minutes" in web_event and web_event["Published minutes"] != "Not\xa0available":
-                e.add_document(
-                    note=web_event["Published minutes"]["label"],
-                    url=web_event["Published minutes"]["url"],
-                    media_type="application/pdf",
-                )
-            else:
+                found_minutes = True
+
+            elif web_event_has_published_minutes:
+                response = requests.get(web_event["Published minutes"]["url"])
+                with io.BytesIO(response.content) as filestream:
+                    with pdfplumber.open(filestream) as pdf:
+                        # Check the first page for text
+                        page = pdf.pages[0]
+                        if len(page.chars) <= 0:
+                            scanned_minutes.update(
+                                note=web_event["Published minutes"]["label"],
+                                url=web_event["Published minutes"]["url"],
+                                media_type="application/pdf",
+                            )
+                        else:
+                            e.add_document(
+                                note=web_event["Published minutes"]["label"],
+                                url=web_event["Published minutes"]["url"],
+                                media_type="application/pdf",
+                            )
+                            found_minutes = True
+
+            if not found_minutes:
                 approved_minutes = self.find_approved_minutes(event)
                 for minutes in approved_minutes:
+                    self.info(f"Using approved minutes file for event {event['EventId']}: {minutes['MatterAttachmentHyperlink']}")
                     e.add_document(
                         note=minutes["MatterAttachmentName"],
                         url=minutes["MatterAttachmentHyperlink"],
@@ -234,6 +264,11 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                         ).date(),
                     )
                     e.extras["approved_minutes"] = True
+                    found_minutes = True
+
+            if not found_minutes and scanned_minutes:
+                self.warning(f"Using scanned minutes file for event {event['EventId']}...")
+                e.add_document(**scanned_minutes)
 
             for audio in event["audio"]:
                 try:
