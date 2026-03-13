@@ -418,33 +418,34 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                                     Image.open(in_mem_image)
                                 )
 
-                            def edit_distance_lte_n(target, corpus, n):
-                                for line in corpus.splitlines():
-                                    _distance = distance(target, line, score_cutoff=n)
-                                    self.debug(f"{target}, {line}, {_distance}")
-                                    if _distance <= n:
-                                        self.debug("FOUND MATCH")
-                                        return True
-                                else:
-                                    return False
+                        def edit_distance_lte_n(target, corpus, n):
+                            for line in corpus.splitlines():
+                                _distance = distance(target, line, score_cutoff=n)
+                                self.debug(f"{target}, {line}, {_distance}")
+                                if _distance <= n:
+                                    return True
+                            else:
+                                return False
 
-                            contains_minutes = "minutes" in cover_page_text.lower()
+                        contains_minutes = "minutes" in cover_page_text.lower()
+                        if contains_minutes:
                             contains_exact_body = (
                                 name.lower() in cover_page_text.lower()
                             )
-                            contains_fuzzy_body = edit_distance_lte_n(
-                                name.lower(), cover_page_text.lower(), 2
-                            )
+                            is_minutes_file = True if contains_exact_body else False
 
-                            if contains_minutes and (
-                                contains_exact_body or contains_fuzzy_body
-                            ):
+                            if not is_minutes_file:
+                                # Try a fuzzy body search
+                                contains_fuzzy_body = edit_distance_lte_n(
+                                    name.lower(), cover_page_text.lower(), 2
+                                )
                                 if contains_fuzzy_body:
                                     self.info(
-                                        "Found minutes for the {0} meeting of {1} by fuzzy match: {2}".format(  # noqa
-                                            name, date, attach
+                                        f"Found minutes for the {name} meeting of {date} by fuzzy match: {attach}"
                                         )
-                                    )
+                                    is_minutes_file = True
+
+                            if is_minutes_file:
                                 yield attach
                                 n_minutes += 1
                                 break
