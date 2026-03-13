@@ -52,8 +52,7 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
     def events(self, since_datetime, event_ids=None):
         if event_ids:
             events = (
-                self.get(f"{self.BASE_URL}/events/{id}").json()
-                for id in event_ids
+                self.get(f"{self.BASE_URL}/events/{id}").json() for id in event_ids
             )
 
         else:
@@ -84,13 +83,13 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
         n_days_ago = None
 
         if window and float(window) != 0:
-            n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(
-                float(window)
-            )
+            n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(float(window))
 
         event_ids = event_ids.split(",") if event_ids else None
 
-        for event, web_event in self.events(since_datetime=n_days_ago, event_ids=event_ids):
+        for event, web_event in self.events(
+            since_datetime=n_days_ago, event_ids=event_ids
+        ):
             body_name = event["EventBodyName"]
 
             if "Board of Directors -" in body_name:
@@ -207,20 +206,8 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
             # in case this event's minutes haven't been approved yet
             e.extras["approved_minutes"] = False
 
-            has_minutes_file = event["EventMinutesFile"]
-
-            web_event_has_published_minutes = (
-                "Published minutes" in web_event
-                and web_event["Published minutes"] != "Not\xa0available"
-            )
-
-            # Events can sometimes have a scanned published minutes file.
-            # In that case, we'll need to search for a more readable
-            # digital approved minutes file.
-            scanned_minutes = {}
-
             found_minutes = False
-            if has_minutes_file:
+            if event["EventMinutesFile"]:
                 e.add_document(
                     note="Minutes",
                     url=event["EventMinutesFile"],
@@ -231,30 +218,13 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                 )
                 found_minutes = True
 
-            elif web_event_has_published_minutes:
-                response = requests.get(web_event["Published minutes"]["url"])
-                with io.BytesIO(response.content) as filestream:
-                    with pdfplumber.open(filestream) as pdf:
-                        # Check the first page for text
-                        page = pdf.pages[0]
-                        if len(page.chars) <= 0:
-                            scanned_minutes.update(
-                                note=web_event["Published minutes"]["label"],
-                                url=web_event["Published minutes"]["url"],
-                                media_type="application/pdf",
-                            )
-                        else:
-                            e.add_document(
-                                note=web_event["Published minutes"]["label"],
-                                url=web_event["Published minutes"]["url"],
-                                media_type="application/pdf",
-                            )
-                            found_minutes = True
-
-            if not found_minutes:
+            else:
+                # Try to find an approved minutes file
                 approved_minutes = self.find_approved_minutes(event)
                 for minutes in approved_minutes:
-                    self.info(f"Using approved minutes file for event {event['EventId']}: {minutes['MatterAttachmentHyperlink']}")
+                    self.info(
+                        f"Found approved minutes file for event {event['EventId']}: {minutes['MatterAttachmentHyperlink']}..."
+                    )
                     e.add_document(
                         note=minutes["MatterAttachmentName"],
                         url=minutes["MatterAttachmentHyperlink"],
@@ -266,9 +236,20 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                     e.extras["approved_minutes"] = True
                     found_minutes = True
 
-            if not found_minutes and scanned_minutes:
-                self.warning(f"Using scanned minutes file for event {event['EventId']}...")
-                e.add_document(**scanned_minutes)
+                # If we can't find an approved minutes file, check if the
+                # web event has a 'Published minutes' file. Note that this file
+                # could be a PDF of scanned physical pages.
+                web_event_has_published_minutes = (
+                    "Published minutes" in web_event
+                    and web_event["Published minutes"] != "Not\xa0available"
+                )
+                if not found_minutes and web_event_has_published_minutes:
+                    self.warning(f"Using web event's 'Published minutes' file for event {event['EventId']}...")
+                    e.add_document(
+                        note=web_event["Published minutes"]["label"],
+                        url=web_event["Published minutes"]["url"],
+                        media_type="application/pdf",
+                    )
 
             for audio in event["audio"]:
                 try:
@@ -437,33 +418,34 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                                     Image.open(in_mem_image)
                                 )
 
-                            def edit_distance_lte_n(target, corpus, n):
-                                for line in corpus.splitlines():
-                                    _distance = distance(target, line, score_cutoff=n)
-                                    self.debug(f"{target}, {line}, {_distance}")
-                                    if _distance <= n:
-                                        self.debug("FOUND MATCH")
-                                        return True
-                                else:
-                                    return False
+                        def edit_distance_lte_n(target, corpus, n):
+                            for line in corpus.splitlines():
+                                _distance = distance(target, line, score_cutoff=n)
+                                self.debug(f"{target}, {line}, {_distance}")
+                                if _distance <= n:
+                                    return True
+                            else:
+                                return False
 
-                            contains_minutes = "minutes" in cover_page_text.lower()
+                        contains_minutes = "minutes" in cover_page_text.lower()
+                        if contains_minutes:
                             contains_exact_body = (
                                 name.lower() in cover_page_text.lower()
                             )
-                            contains_fuzzy_body = edit_distance_lte_n(
-                                name.lower(), cover_page_text.lower(), 2
-                            )
+                            is_minutes_file = True if contains_exact_body else False
 
-                            if contains_minutes and (
-                                contains_exact_body or contains_fuzzy_body
-                            ):
+                            if not is_minutes_file:
+                                # Try a fuzzy body search
+                                contains_fuzzy_body = edit_distance_lte_n(
+                                    name.lower(), cover_page_text.lower(), 2
+                                )
                                 if contains_fuzzy_body:
                                     self.info(
-                                        "Found minutes for the {0} meeting of {1} by fuzzy match: {2}".format(  # noqa
-                                            name, date, attach
+                                        f"Found minutes for the {name} meeting of {date} by fuzzy match: {attach}"
                                         )
-                                    )
+                                    is_minutes_file = True
+
+                            if is_minutes_file:
                                 yield attach
                                 n_minutes += 1
                                 break
