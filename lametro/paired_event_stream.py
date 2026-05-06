@@ -1,5 +1,6 @@
 import datetime
 import logging
+import re
 from typing import Generator, Optional
 
 from .base import LAMetroAPIWebEventScraper
@@ -37,8 +38,12 @@ class LAMetroAPIEvent(dict):
 
     @property
     def partner_search_string(self):
-        search_string = "EventBodyName eq '{}'".format(self._partner_name)
-        search_string += " and EventDate eq datetime'{}'".format(self["EventDate"])
+        # OData requires single quotes to be escaped with two single quotes
+        escaped_partner_name = re.sub(r"'", "''", self._partner_name)
+        search_string = (
+            f"EventBodyName eq '{escaped_partner_name}'"
+            f" and EventDate eq datetime'{self['EventDate']}'"
+        )
 
         return search_string
 
@@ -63,6 +68,7 @@ class LAMetroWebEventDetail(dict):
     This class is for adding methods to the web event dict
     to facilitate labeling and sourcing audio appropriately.
     """
+
     AUDIO_KEY = "Meeting video"
     ECOMMENT_KEY = "eComment"
 
@@ -100,7 +106,11 @@ class PairedEventStream:
 
     def __iter__(
         self,
-    ) -> Generator[tuple[LAMetroAPIEvent, LAMetroWebEventDetail | LAMetroWebCalendarEvent], None, None]:
+    ) -> Generator[
+        tuple[LAMetroAPIEvent, LAMetroWebEventDetail | LAMetroWebCalendarEvent],
+        None,
+        None,
+    ]:
         for event, web_event in self.merged_events:
             yield LAMetroAPIEvent(event), LAMetroWebEvent(web_event)
 
@@ -179,9 +189,9 @@ class PairedEventStream:
                     f"English event discarded by base scraper due to the following error: {e}"
                 )
                 continue
-            
+
             en_web_event = LAMetroWebEvent(web_event)
-                        
+
             if en_web_event.has_web_link:
                 event_details.append(
                     {
@@ -203,9 +213,9 @@ class PairedEventStream:
                 else:
                     event["SAPEventId"] = partner["EventId"]
                     event["SAPEventGuid"] = partner["EventGuid"]
-                    
+
                     sap_web_event = LAMetroWebEvent(partner_web_event)
-                    
+
                     if sap_web_event.has_web_link:
                         event_details.append(
                             {
@@ -215,7 +225,9 @@ class PairedEventStream:
                         )
 
                     if sap_web_event.has_audio:
-                        partner_web_event[sap_web_event.AUDIO_KEY]["label"] = "Audio (SAP)"
+                        partner_web_event[sap_web_event.AUDIO_KEY][
+                            "label"
+                        ] = "Audio (SAP)"
                         event_audio.append(partner_web_event[sap_web_event.AUDIO_KEY])
 
             event.update(
