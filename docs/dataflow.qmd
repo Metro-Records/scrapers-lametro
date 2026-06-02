@@ -1,0 +1,67 @@
+---
+date: 6/2/2026
+date-modified: last-modified
+---
+
+# Data flow
+
+## LAMetro scraper
+
+- **Python backend**
+  -   Based off of [`python-legistar-scraper`]
+  -   Depends on [`pupa`] scraper/importer
+-   Data is fetched from the [Legistar API]
+-   It is normalized as specified in either [`python-legistar-scraper`] or [`scrapers-lametro`]
+-   To be included in database import, API data needs to be part of the construction of a pupa scrape object like `Bill` or added to a scrape object, using a pupa method like `Bill.add_sponsorship()`, or `Bill.add_action()`.
+-   Pupa import is backed by `opencivicdata` (OCD) [models][OCD]
+-   Imported data then is available in the database for Django apps to access and build their own models on top of, in ways that are convenient for accessing data for presentation.
+
+[Legistar API]: https://webapi.legistar.com/
+[`scrapers-lametro`]: https://github.com/Metro-Records/scrapers-lametro
+[`python-legistar-scraper`]: https://github.com/opencivicdata/python-legistar-scraper/
+[`pupa`]: https://github.com/opencivicdata/pupa
+[`python-opencivicdata`]: https://github.com/opencivicdata/python-opencivicdata
+[OCD]: https://open-civic-data.readthedocs.io/en/latest/data/datatypes.html
+[LAMetro Councilmatic]: https://github.com/Metro-Records/la-metro-councilmatic
+[`django-councilmatic`]: https://github.com/datamade/django-councilmatic
+
+## [LAMetro Councilmatic]
+
+- **Django frontend**
+  - Models based off of [`django-councilmatic`] models
+  - Which are themselves based off of [`python-opencivicdata`] models
+  - Which are again, an implementation of [OCD] models
+- In addition to Django models, the frontend also creates a Haystack search index object which maps model fields onto search document fields for serialization in `search_indexes.py`
+- `result` in search templates refers to these Haystack search index objects
+- If you can't find a property or method on an `LAMetro...` or `LAMetro...Index` model, you may need to look deeper in the model dependencies above. 
+
+## Example: Bill Sponsors
+
+1.  Fetch API data
+
+    In the case of bill sponsors, given a `MatterID` for a bill, `scrapers-lametro` bill scraper (`lametro/bills.py`) calls a function inherited from `python-legistar-scraper` to fetch data from the MatterSponsor API endpoint using that matter ID (`sponsors(matter_id)`).
+
+2.  Normalize data
+
+    `scrapers-lametro` uses a LAMetro-specific `sponsorships()` method to wrap the raw sponsorship data into dicts, with the first sponsorship being flagged as primary, and yielding each in turn
+
+3.  Add to Bill object
+
+    The LAMetro scraper then calls the pupa method `add_sponsorship(sponsorship**)` to unpack each yielded `sponsorship` dict to guarantee the data structure conforms to the OCD format before it is appended to the `Bill` object.
+	
+4.  Import
+
+    LAMetro Scrapers bill importer (`la_metro_bill.py`) calls the pupa `BillImporter`, and the bill is written as a row to `opencivicdata_bill`, and writes each sponsorship as a row in the `opencivicdata_billsponsorship` table with `bill_id` referencing that bill.
+
+5.  Councilmatic model
+
+    `django-councilmatic` defines its own Bill model based on the OCD model, which adds, among other things, a property `primary_sponsor`, which filters for the primary sponsor and unwraps the queryset with `first()`.
+
+6.  Search Index
+
+    The Haystack search index `LAMetroBillIndex` declares and populates a `primary_sponsor` field with the `name` of the primary sponsor.
+
+7.  Templates
+
+    Now the `search/_tags.html` template can reference `result.primary_sponsor` to display the name of the first sponsor listed on the bill.
+
