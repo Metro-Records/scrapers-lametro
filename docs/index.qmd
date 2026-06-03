@@ -12,8 +12,13 @@ At a high level, the scrapers retrieve information from Metro instances of
 [the Legistar interface, also known as InSite](https://metro.legistar.com/Legislation.aspx),
 and [the Legistar API](https://webapi.legistar.com/) (endpoints at `https://webapi.legistar.com/metro/*`).
 
+For more information about how data is processed and the chain of
+dependencies supporting the LA Metro scraper to Councilmatic pipeline,
+see [Data Flow](./dataflow.qmd).
+
 See the relevant scraper documentation for more information about where information
 comes from, and how it is parsed.
+
 
 ## How are they run?
 
