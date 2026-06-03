@@ -1,104 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "",
-    "text": "Welcome to the documentation for the LA Metro Scrapers! Here, you’ll find information about local development, deployment, and an overview of each scraper (and decisions that we’ve made about them)."
-  },
-  {
-    "objectID": "index.html#how-do-they-work",
-    "href": "index.html#how-do-they-work",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "How do they work?",
-    "text": "How do they work?\nAt a high level, the scrapers retrieve information from Metro instances of the Legistar interface, also known as InSite, and the Legistar API (endpoints at https://webapi.legistar.com/metro/*).\nSee the relevant scraper documentation for more information about where information comes from, and how it is parsed."
-  },
-  {
-    "objectID": "index.html#how-are-they-run",
-    "href": "index.html#how-are-they-run",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "How are they run?",
-    "text": "How are they run?\nThe scrapers are run by Airflow and populate LA Metro Councilmatic instances, outlined below.\n\n\n\nScraper image tag\nAirflow instance\nMetro instance\n\n\n\n\nmain\nhttps://la-metro-dashboard-heroku.datamade.us/home\nhttps://la-metro-councilmatic-staging.herokuapp.com/\n\n\ndeploy\nhttps://la-metro-dashboard-heroku-prod.datamade.us/home\nhttps://boardagendas.metro.net\n\n\n\nSee Deployment for more on how scraper image tags are built."
-  },
-  {
-    "objectID": "index.html#when-do-they-run",
-    "href": "index.html#when-do-they-run",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "When do they run?",
-    "text": "When do they run?\n\n\n\n\n\n\nTip\n\n\n\nSee the Airflow dashboard for information about the latest and next scraper runs.\n\n\n\n\n\n\n\n\nTip\n\n\n\nScrape schedules are written in UTC!\n\nSubtract 7 hours to convert to Los Angeles time.\nSubtract 5 hours to convert to Chicago time.\n\nMental math getting you down? Try World Time Buddy!\n\n\n\nwindowed_bill_scrape\nScrape bills with a window of 0.05 at 5, 20, 35, and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 5, 20, 35, and 50 minutes past the hour, Sunday through Thursday\nAt 5, 20, 35, and 50 minutes past the hour, between 12:00 AM and 08:59 PM, only on Friday\nAt 5, 20, 35, and 50 minutes past the hour, between 06:00 AM and 11:59 PM, only on Saturday\n\n\n\nfast_windowed_bill_scrape\nScrape bills with a window of 1 at 35 and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 35 and 50 minutes past the hour, between 09:00 PM and 11:59 PM, only on Friday\nAt 35 and 50 minutes past the hour, between 12:00 AM and 05:59 AM, only on Saturday\n\n\n\nfast_full_bill_scrape\nScrape all bills quickly at 5 past the hour. This generally takes less than 30 minutes.\n\nAt 5 minutes past the hour, between 09:00 PM and 11:59 PM, only on Friday\nAt 5 minutes past the hour, between 12:00 AM and 05:59 AM, only on Saturday\n\n\n\nwindowed_event_scrape\nScrape events with a window of 0.05 at 0, 15, 30, and 45 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 0, 15, 30, and 45 minutes past the hour, Sunday through Thursday\nAt 0, 15, 30, and 45 minutes past the hour, between 12:00 AM and 08:59 PM, only on Friday\nAt 0, 15, 30, and 45 minutes past the hour, between 06:00 AM and 11:59 PM, only on Saturday\n\n\n\nfast_windowed_event_scrape\nScrape events with a window of 1 at 35 and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 30 and 45 minutes past the hour, between 09:00 PM and 11:59 PM, only on Friday\nAt 30 and 45 minutes past the hour, between 12:00 AM and 05:59 AM, only on Saturday\n\n\n\nfast_full_event_scrape\nScrape all events quickly on the hour. This generally takes less than 30 minutes.\n\nBetween 09:00 PM and 11:59 PM, only on Friday\nBetween 12:00 AM and 05:59 AM, only on Saturday\n\n\n\nperson_scrape\nScrape all people and committees. Run in lieu of full scrape on Fridays, when all bills and events are scraped once an hour.\n\nAt 03:05 AM, only on Saturday"
-  },
-  {
-    "objectID": "index.html#what-do-they-depend-on",
-    "href": "index.html#what-do-they-depend-on",
-    "title": "LA Metro Scrapers Documentation",
-    "section": "What do they depend on?",
-    "text": "What do they depend on?\nThe scrapers have a couple of key dependencies.\n\npupa is the framework for scraping and organizing data according to the Open Civic Data standard. Our scrapers are subclasses of pupa.Scraper, and we use the pupa CLI to run scrapes.\n\nSee Useful pupa commands for more on the CLI.\n\npython-legistar-scraper is a Python wrapper for InSite and the Legistar API that we use to retrieve data. Our scrapers are also subclasses of the relevant LegistarScraper subclasses from this library."
-  },
-  {
-    "objectID": "scrapers/people.html",
-    "href": "scrapers/people.html",
-    "title": "Board Member and Legislative Body Scrapers",
-    "section": "",
-    "text": "Located in lametro/people.py\nCreates the board and its committees (or, bodies of type “Committee” or “Independent Taxpayer Oversight Committee”)\nCreates members of the above bodies and membership objects for each of their terms\nFurther reading: https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html",
-    "crumbs": [
-      "Scrapers",
-      "Board Member and Legislative Body Scrapers"
-    ]
-  },
-  {
-    "objectID": "scrapers/people.html#key-issues",
-    "href": "scrapers/people.html#key-issues",
-    "title": "Board Member and Legislative Body Scrapers",
-    "section": "Key issues",
-    "text": "Key issues\n\nMemberships are tricky! Sometimes, they are updated in ways that don’t resolve correctly, introducing duplicates. Other times, they are deleted from Legistar, which is a challenge for us to detect.\n\nConsider start date in addition to, or instead of, end date when importing memberships\nCommittees: Old Committee members showing\nFind a mechanism to handle data deleted from the source system",
-    "crumbs": [
-      "Scrapers",
-      "Board Member and Legislative Body Scrapers"
-    ]
-  },
-  {
-    "objectID": "scrapers/bills.html",
-    "href": "scrapers/bills.html",
-    "title": "Bill Scraper",
-    "section": "",
-    "text": "Located in lametro/bills.py\nCreates board reports and their associated attachments, sponsorships, votes, relations, and topics\nFurther reading: https://open-civic-data.readthedocs.io/en/latest/proposals/0006.html",
-    "crumbs": [
-      "Scrapers",
-      "Bill Scraper"
-    ]
-  },
-  {
-    "objectID": "scrapers/bills.html#key-issues",
-    "href": "scrapers/bills.html#key-issues",
-    "title": "Bill Scraper",
-    "section": "Key issues",
-    "text": "Key issues\n\nBoard reports are added to the Legistar API before they are published to InSite. We need to determine which are “private” in order to suppress them in Councilmatic.\n\nWhy do we need to scrape private bills?\nLimit private scrape\n\nOur windowed scrapes rely on timestamps from the Legistar API, however the timestamps are not always updated when changes are made.\n\nMetro scraper did not scrape EventAgendaStatusName\nMetro: Scrape matters updated within a window, as well as matters related to events updated within a window",
-    "crumbs": [
-      "Scrapers",
-      "Bill Scraper"
-    ]
-  },
-  {
-    "objectID": "deployment.html",
-    "href": "deployment.html",
-    "title": "Deployment",
-    "section": "",
-    "text": "We deploy the scrapers as tagged Docker images. Tagged images are built automatically and published to the GitHub Container Registry by the publish_image.yml workflow.\nDeployment can be summarized as follows:",
-    "crumbs": [
-      "Deployment"
-    ]
-  },
-  {
-    "objectID": "deployment.html#when-should-i-deploy-the-scrapers",
-    "href": "deployment.html#when-should-i-deploy-the-scrapers",
-    "title": "Deployment",
-    "section": "When should I deploy the scrapers?",
-    "text": "When should I deploy the scrapers?\nA main tag will be built automatically when a pull request is merged.\n\n\n\n\n\n\nCaution\n\n\n\nIf you have made a significant change to a scraper, it is recommended that you run that scrape on the staging Airflow instance before deploying the change to the production Airflow instance.\n\n\nA deploy tag will be built on pushes to the deploy branch. Once you are ready to deploy your change to production, run:\ngit push origin main:deploy\n\nA note on dependencies\nWe install our pupa and legistar dependencies from the master branch of their respective repositories, i.e., pip will not automatically recognize changes to these libraries.\n\n\n\n\n\n\nWarning\n\n\n\nIf you have made a change to pupa or legistar, you must rebuild the scraper images to deploy it.\n\n\nTo rebuild the scraper images without making a change to the scraper code, check out the main branch, then run:\ngit commit --allow-empty -m \"Rebuild scrapers\"\ngit push origin main && git push origin main:deploy",
-    "crumbs": [
-      "Deployment"
-    ]
-  },
-  {
     "objectID": "debugging.html",
     "href": "debugging.html",
     "title": "Debugging",
@@ -129,25 +30,23 @@
     ]
   },
   {
-    "objectID": "scrapers/events.html",
-    "href": "scrapers/events.html",
-    "title": "Event Scraper",
+    "objectID": "deployment.html",
+    "href": "deployment.html",
+    "title": "Deployment",
     "section": "",
-    "text": "Located in lametro/events.py\nCreates events",
+    "text": "We deploy the scrapers as tagged Docker images. Tagged images are built automatically and published to the GitHub Container Registry by the publish_image.yml workflow.\nDeployment can be summarized as follows:",
     "crumbs": [
-      "Scrapers",
-      "Event Scraper"
+      "Deployment"
     ]
   },
   {
-    "objectID": "scrapers/events.html#key-issues",
-    "href": "scrapers/events.html#key-issues",
-    "title": "Event Scraper",
-    "section": "Key issues",
-    "text": "Key issues\n\nMetro streams audio in both English and Spanish. They cannot associate multiple broadcast link with one event in Legistar, so they create two nearly identical events that we merge during scrapes.\n\nImport and display the Spanish language audio\n“Ver en español” link not visible\n\nThe board approves minutes for their previous meeting each time they meet. Sometimes, these minutes are explicitly associated with the event. When they aren’t, we try to guess the approved minutes file.\n\nFind approved minutes\nUpgrades to the LA Metro scraper\nEvent scrape: If there is more than one minutes file, which one should we use?\nAccount for multiple meeting minutes",
+    "objectID": "deployment.html#when-should-i-deploy-the-scrapers",
+    "href": "deployment.html#when-should-i-deploy-the-scrapers",
+    "title": "Deployment",
+    "section": "When should I deploy the scrapers?",
+    "text": "When should I deploy the scrapers?\nA main tag will be built automatically when a pull request is merged.\n\n\n\n\n\n\nCaution\n\n\n\nIf you have made a significant change to a scraper, it is recommended that you run that scrape on the staging Airflow instance before deploying the change to the production Airflow instance.\n\n\nA deploy tag will be built on pushes to the deploy branch. Once you are ready to deploy your change to production, run:\ngit push origin main:deploy\n\nA note on dependencies\nWe install our pupa and legistar dependencies from the master branch of their respective repositories, i.e., pip will not automatically recognize changes to these libraries.\n\n\n\n\n\n\nWarning\n\n\n\nIf you have made a change to pupa or legistar, you must rebuild the scraper images to deploy it.\n\n\nTo rebuild the scraper images without making a change to the scraper code, check out the main branch, then run:\ngit commit --allow-empty -m \"Rebuild scrapers\"\ngit push origin main && git push origin main:deploy",
     "crumbs": [
-      "Scrapers",
-      "Event Scraper"
+      "Deployment"
     ]
   },
   {
@@ -184,6 +83,28 @@
     ]
   },
   {
+    "objectID": "scrapers/bills.html",
+    "href": "scrapers/bills.html",
+    "title": "Bill Scraper",
+    "section": "",
+    "text": "Located in lametro/bills.py\nCreates board reports and their associated attachments, sponsorships, votes, relations, and topics\nFurther reading: https://open-civic-data.readthedocs.io/en/latest/proposals/0006.html",
+    "crumbs": [
+      "Scrapers",
+      "Bill Scraper"
+    ]
+  },
+  {
+    "objectID": "scrapers/bills.html#key-issues",
+    "href": "scrapers/bills.html#key-issues",
+    "title": "Bill Scraper",
+    "section": "Key issues",
+    "text": "Key issues\n\nBoard reports are added to the Legistar API before they are published to InSite. We need to determine which are “private” in order to suppress them in Councilmatic.\n\nWhy do we need to scrape private bills?\nLimit private scrape\n\nOur windowed scrapes rely on timestamps from the Legistar API, however the timestamps are not always updated when changes are made.\n\nMetro scraper did not scrape EventAgendaStatusName\nMetro: Scrape matters updated within a window, as well as matters related to events updated within a window",
+    "crumbs": [
+      "Scrapers",
+      "Bill Scraper"
+    ]
+  },
+  {
     "objectID": "local-development.html",
     "href": "local-development.html",
     "title": "Local development",
@@ -211,6 +132,125 @@
     "text": "Writing tests\ntktktk",
     "crumbs": [
       "Local development"
+    ]
+  },
+  {
+    "objectID": "scrapers/people.html",
+    "href": "scrapers/people.html",
+    "title": "Board Member and Legislative Body Scrapers",
+    "section": "",
+    "text": "Located in lametro/people.py\nCreates the board and its committees (or, bodies of type “Committee” or “Independent Taxpayer Oversight Committee”)\nCreates members of the above bodies and membership objects for each of their terms\nFurther reading: https://open-civic-data.readthedocs.io/en/latest/proposals/0005.html",
+    "crumbs": [
+      "Scrapers",
+      "Board Member and Legislative Body Scrapers"
+    ]
+  },
+  {
+    "objectID": "scrapers/people.html#key-issues",
+    "href": "scrapers/people.html#key-issues",
+    "title": "Board Member and Legislative Body Scrapers",
+    "section": "Key issues",
+    "text": "Key issues\n\nMemberships are tricky! Sometimes, they are updated in ways that don’t resolve correctly, introducing duplicates. Other times, they are deleted from Legistar, which is a challenge for us to detect.\n\nConsider start date in addition to, or instead of, end date when importing memberships\nCommittees: Old Committee members showing\nFind a mechanism to handle data deleted from the source system",
+    "crumbs": [
+      "Scrapers",
+      "Board Member and Legislative Body Scrapers"
+    ]
+  },
+  {
+    "objectID": "scrapers/events.html",
+    "href": "scrapers/events.html",
+    "title": "Event Scraper",
+    "section": "",
+    "text": "Located in lametro/events.py\nCreates events",
+    "crumbs": [
+      "Scrapers",
+      "Event Scraper"
+    ]
+  },
+  {
+    "objectID": "scrapers/events.html#key-issues",
+    "href": "scrapers/events.html#key-issues",
+    "title": "Event Scraper",
+    "section": "Key issues",
+    "text": "Key issues\n\nMetro streams audio in both English and Spanish. They cannot associate multiple broadcast link with one event in Legistar, so they create two nearly identical events that we merge during scrapes.\n\nImport and display the Spanish language audio\n“Ver en español” link not visible\n\nThe board approves minutes for their previous meeting each time they meet. Sometimes, these minutes are explicitly associated with the event. When they aren’t, we try to guess the approved minutes file.\n\nFind approved minutes\nUpgrades to the LA Metro scraper\nEvent scrape: If there is more than one minutes file, which one should we use?\nAccount for multiple meeting minutes",
+    "crumbs": [
+      "Scrapers",
+      "Event Scraper"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "",
+    "text": "Welcome to the documentation for the LA Metro Scrapers! Here, you’ll find information about local development, deployment, and an overview of each scraper (and decisions that we’ve made about them)."
+  },
+  {
+    "objectID": "index.html#how-do-they-work",
+    "href": "index.html#how-do-they-work",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "How do they work?",
+    "text": "How do they work?\nAt a high level, the scrapers retrieve information from Metro instances of the Legistar interface, also known as InSite, and the Legistar API (endpoints at https://webapi.legistar.com/metro/*).\nFor more information about how data is processed and the chain of dependencies supporting the LA Metro scraper to Councilmatic pipeline, see Data Flow.\nSee the relevant scraper documentation for more information about where information comes from, and how it is parsed."
+  },
+  {
+    "objectID": "index.html#how-are-they-run",
+    "href": "index.html#how-are-they-run",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "How are they run?",
+    "text": "How are they run?\nThe scrapers are run by Airflow and populate LA Metro Councilmatic instances, outlined below.\n\n\n\nScraper image tag\nAirflow instance\nMetro instance\n\n\n\n\nmain\nhttps://la-metro-dashboard-heroku.datamade.us/home\nhttps://la-metro-councilmatic-staging.herokuapp.com/\n\n\ndeploy\nhttps://la-metro-dashboard-heroku-prod.datamade.us/home\nhttps://boardagendas.metro.net\n\n\n\nSee Deployment for more on how scraper image tags are built."
+  },
+  {
+    "objectID": "index.html#when-do-they-run",
+    "href": "index.html#when-do-they-run",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "When do they run?",
+    "text": "When do they run?\n\n\n\n\n\n\nTip\n\n\n\nSee the Airflow dashboard for information about the latest and next scraper runs.\n\n\n\n\n\n\n\n\nTip\n\n\n\nScrape schedules are written in UTC!\n\nSubtract 7 hours to convert to Los Angeles time.\nSubtract 5 hours to convert to Chicago time.\n\nMental math getting you down? Try World Time Buddy!\n\n\n\nwindowed_bill_scrape\nScrape bills with a window of 0.05 at 5, 20, 35, and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 5, 20, 35, and 50 minutes past the hour, Sunday through Thursday\nAt 5, 20, 35, and 50 minutes past the hour, between 00:00 and 20:59, only on Friday\nAt 5, 20, 35, and 50 minutes past the hour, between 06:00 and 23:59, only on Saturday\n\n\n\nfast_windowed_bill_scrape\nScrape bills with a window of 1 at 35 and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 35 and 50 minutes past the hour, between 21:00 and 23:59, only on Friday\nAt 35 and 50 minutes past the hour, between 00:00 and 05:59, only on Saturday\n\n\n\nfast_full_bill_scrape\nScrape all bills quickly at 5 past the hour. This generally takes less than 30 minutes.\n\nAt 5 minutes past the hour, between 21:00 and 23:59, only on Friday\nAt 5 minutes past the hour, between 00:00 and 05:59, only on Saturday\n\n\n\nwindowed_event_scrape\nScrape events with a window of 0.05 at 0, 15, 30, and 45 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 0, 15, 30, and 45 minutes past the hour, Sunday through Thursday\nAt 0, 15, 30, and 45 minutes past the hour, between 00:00 and 20:59, only on Friday\nAt 0, 15, 30, and 45 minutes past the hour, between 06:00 and 23:59, only on Saturday\n\n\n\nfast_windowed_event_scrape\nScrape events with a window of 1 at 35 and 50 minutes past the hour. This generally takes somewhere between a few seconds and a few minutes, depending on the volume of updates.\n\nAt 30 and 45 minutes past the hour, between 21:00 and 23:59, only on Friday\nAt 30 and 45 minutes past the hour, between 00:00 and 05:59, only on Saturday\n\n\n\nfast_full_event_scrape\nScrape all events quickly on the hour. This generally takes less than 30 minutes.\n\nBetween 21:00 and 23:59, only on Friday\nBetween 00:00 and 05:59, only on Saturday\n\n\n\nperson_scrape\nScrape all people and committees. Run in lieu of full scrape on Fridays, when all bills and events are scraped once an hour.\n\nAt 03:05, only on Saturday"
+  },
+  {
+    "objectID": "index.html#what-do-they-depend-on",
+    "href": "index.html#what-do-they-depend-on",
+    "title": "LA Metro Scrapers Documentation",
+    "section": "What do they depend on?",
+    "text": "What do they depend on?\nThe scrapers have a couple of key dependencies.\n\npupa is the framework for scraping and organizing data according to the Open Civic Data standard. Our scrapers are subclasses of pupa.Scraper, and we use the pupa CLI to run scrapes.\n\nSee Useful pupa commands for more on the CLI.\n\npython-legistar-scraper is a Python wrapper for InSite and the Legistar API that we use to retrieve data. Our scrapers are also subclasses of the relevant LegistarScraper subclasses from this library."
+  },
+  {
+    "objectID": "dataflow.html",
+    "href": "dataflow.html",
+    "title": "Data flow",
+    "section": "",
+    "text": "Python backend\n\nBased off of python-legistar-scraper\nDepends on pupa scraper/importer\n\nData is fetched from the Legistar API\nIt is normalized as specified in either python-legistar-scraper or scrapers-lametro\nTo be included in database import, API data needs to be part of the construction of a pupa scrape object like Bill or added to a scrape object, using a pupa method like Bill.add_sponsorship(), or Bill.add_action().\nPupa import is backed by opencivicdata (OCD) models\nImported data then is available in the database for Django apps to access and build their own models on top of, in ways that are convenient for accessing data for presentation.\n\n\n\n\n\nDjango frontend\n\nModels based off of django-councilmatic models\nWhich are themselves based off of python-opencivicdata models\nWhich are again, an implementation of OCD models\n\nIn addition to Django models, the frontend also creates a Haystack search index object which maps model fields onto search document fields for serialization in search_indexes.py\nresult in search templates refers to these Haystack search index objects\nIf you can’t find a property or method on an LAMetro... or LAMetro...Index model, you may need to look deeper in the model dependencies above.\n\n\n\n\n\nFetch API data\nIn the case of bill sponsors, given a MatterID for a bill, scrapers-lametro bill scraper (lametro/bills.py) calls a function inherited from python-legistar-scraper to fetch data from the MatterSponsor API endpoint using that matter ID (sponsors(matter_id)).\nNormalize data\nscrapers-lametro uses a LAMetro-specific sponsorships() method to wrap the raw sponsorship data into dicts, with the first sponsorship being flagged as primary, and yielding each in turn\nAdd to Bill object\nThe LAMetro scraper then calls the pupa method add_sponsorship(sponsorship**) to unpack each yielded sponsorship dict to guarantee the data structure conforms to the OCD format before it is appended to the Bill object.\nImport\nLAMetro Scrapers bill importer (la_metro_bill.py) calls the pupa BillImporter, and the bill is written as a row to opencivicdata_bill, and writes each sponsorship as a row in the opencivicdata_billsponsorship table with bill_id referencing that bill.\nCouncilmatic model\ndjango-councilmatic defines its own Bill model based on the OCD model, which adds, among other things, a property primary_sponsor, which filters for the primary sponsor and unwraps the queryset with first().\nSearch Index\nThe Haystack search index LAMetroBillIndex declares and populates a primary_sponsor field with the name of the primary sponsor.\nTemplates\nNow the search/_tags.html template can reference result.primary_sponsor to display the name of the first sponsor listed on the bill.",
+    "crumbs": [
+      "Data flow"
+    ]
+  },
+  {
+    "objectID": "dataflow.html#lametro-scraper",
+    "href": "dataflow.html#lametro-scraper",
+    "title": "Data flow",
+    "section": "",
+    "text": "Python backend\n\nBased off of python-legistar-scraper\nDepends on pupa scraper/importer\n\nData is fetched from the Legistar API\nIt is normalized as specified in either python-legistar-scraper or scrapers-lametro\nTo be included in database import, API data needs to be part of the construction of a pupa scrape object like Bill or added to a scrape object, using a pupa method like Bill.add_sponsorship(), or Bill.add_action().\nPupa import is backed by opencivicdata (OCD) models\nImported data then is available in the database for Django apps to access and build their own models on top of, in ways that are convenient for accessing data for presentation.",
+    "crumbs": [
+      "Data flow"
+    ]
+  },
+  {
+    "objectID": "dataflow.html#lametro-councilmatic",
+    "href": "dataflow.html#lametro-councilmatic",
+    "title": "Data flow",
+    "section": "",
+    "text": "Django frontend\n\nModels based off of django-councilmatic models\nWhich are themselves based off of python-opencivicdata models\nWhich are again, an implementation of OCD models\n\nIn addition to Django models, the frontend also creates a Haystack search index object which maps model fields onto search document fields for serialization in search_indexes.py\nresult in search templates refers to these Haystack search index objects\nIf you can’t find a property or method on an LAMetro... or LAMetro...Index model, you may need to look deeper in the model dependencies above.",
+    "crumbs": [
+      "Data flow"
+    ]
+  },
+  {
+    "objectID": "dataflow.html#example-bill-sponsors",
+    "href": "dataflow.html#example-bill-sponsors",
+    "title": "Data flow",
+    "section": "",
+    "text": "Fetch API data\nIn the case of bill sponsors, given a MatterID for a bill, scrapers-lametro bill scraper (lametro/bills.py) calls a function inherited from python-legistar-scraper to fetch data from the MatterSponsor API endpoint using that matter ID (sponsors(matter_id)).\nNormalize data\nscrapers-lametro uses a LAMetro-specific sponsorships() method to wrap the raw sponsorship data into dicts, with the first sponsorship being flagged as primary, and yielding each in turn\nAdd to Bill object\nThe LAMetro scraper then calls the pupa method add_sponsorship(sponsorship**) to unpack each yielded sponsorship dict to guarantee the data structure conforms to the OCD format before it is appended to the Bill object.\nImport\nLAMetro Scrapers bill importer (la_metro_bill.py) calls the pupa BillImporter, and the bill is written as a row to opencivicdata_bill, and writes each sponsorship as a row in the opencivicdata_billsponsorship table with bill_id referencing that bill.\nCouncilmatic model\ndjango-councilmatic defines its own Bill model based on the OCD model, which adds, among other things, a property primary_sponsor, which filters for the primary sponsor and unwraps the queryset with first().\nSearch Index\nThe Haystack search index LAMetroBillIndex declares and populates a primary_sponsor field with the name of the primary sponsor.\nTemplates\nNow the search/_tags.html template can reference result.primary_sponsor to display the name of the first sponsor listed on the bill.",
+    "crumbs": [
+      "Data flow"
     ]
   }
 ]

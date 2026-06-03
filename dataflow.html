@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2026-06-02">
 
-<title>Local development – LA Metro Scrapers Documentation</title>
+<title>dataflow – LA Metro Scrapers Documentation</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -22,41 +23,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -119,7 +85,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./local-development.html">Local development</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./dataflow.html">Data flow</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -174,7 +140,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./local-development.html" class="sidebar-item-text sidebar-link active">
+  <a href="./local-development.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Local development</span></a>
   </div>
 </li>
@@ -186,7 +152,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./dataflow.html" class="sidebar-item-text sidebar-link">
+  <a href="./dataflow.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Data flow</span></a>
   </div>
 </li>
@@ -235,12 +201,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#running-the-scrapers" id="toc-running-the-scrapers" class="nav-link active" data-scroll-target="#running-the-scrapers">Running the scrapers</a>
+  <li><a href="#data-flow" id="toc-data-flow" class="nav-link active" data-scroll-target="#data-flow">Data flow</a>
   <ul class="collapse">
-  <li><a href="#populate-a-local-councilmatic-instance" id="toc-populate-a-local-councilmatic-instance" class="nav-link" data-scroll-target="#populate-a-local-councilmatic-instance">Populate a local Councilmatic instance</a></li>
-  <li><a href="#useful-pupa-commands" id="toc-useful-pupa-commands" class="nav-link" data-scroll-target="#useful-pupa-commands">Useful pupa commands</a></li>
+  <li><a href="#lametro-scraper" id="toc-lametro-scraper" class="nav-link" data-scroll-target="#lametro-scraper">LAMetro scraper</a></li>
+  <li><a href="#lametro-councilmatic" id="toc-lametro-councilmatic" class="nav-link" data-scroll-target="#lametro-councilmatic">LAMetro Councilmatic</a></li>
+  <li><a href="#example-bill-sponsors" id="toc-example-bill-sponsors" class="nav-link" data-scroll-target="#example-bill-sponsors">Example: Bill Sponsors</a></li>
   </ul></li>
-  <li><a href="#writing-tests" id="toc-writing-tests" class="nav-link" data-scroll-target="#writing-tests">Writing tests</a></li>
   </ul>
 </nav>
     </div>
@@ -249,7 +215,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Local development</h1>
 </div>
 
 
@@ -257,7 +222,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 2, 2026</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">June 3, 2026</p>
+    </div>
+  </div>
     
   </div>
   
@@ -266,123 +243,58 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="running-the-scrapers" class="level2">
-<h2 class="anchored" data-anchor-id="running-the-scrapers">Running the scrapers</h2>
-<p>The scrapers are bundled with a <code>docker-compose.yml</code> file that will allow you to run them on your machine.</p>
-<p>To scrape all recently updated data, run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose run <span class="at">--rm</span> scrapers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>To run a particular scrape or pass arguments to <code>pupa</code>, append your command to the end of the previous command, like:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scrape board reports from the last week</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose run <span class="at">--rm</span> scrapers pupa update lametro bills window=7</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<section id="populate-a-local-councilmatic-instance" class="level3">
-<h3 class="anchored" data-anchor-id="populate-a-local-councilmatic-instance">Populate a local Councilmatic instance</h3>
-<p>If you’d like to scrape data into a Councilmatic instance for easy viewing, first run your local instance of LA Metro Councilmatic as normal.</p>
-<p>Then, in your local scraper repository, run your scrapes using the <code>docker-compose.councilmatic.yml</code> file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> docker-compose.councilmatic.yml run <span class="at">--rm</span> scrapers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="useful-pupa-commands" class="level3">
-<h3 class="anchored" data-anchor-id="useful-pupa-commands">Useful pupa commands</h3>
-<section id="pupa-update" class="level4">
-<h4 class="anchored" data-anchor-id="pupa-update">pupa update</h4>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> pupa update <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> <span class="pp">[--</span><span class="ss">scrape</span><span class="pp">]</span> <span class="pp">[--</span><span class="ss">import</span><span class="pp">]</span> <span class="pp">[--</span><span class="ss">nonstrict</span><span class="pp">]</span> <span class="pp">[--</span><span class="ss">fastmode</span><span class="pp">]</span> [--datadir SCRAPED_DATA_DIR] [--cachedir CACHE_DIR]</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                   <span class="ex">[-r</span> SCRAPELIB_RPM] [--timeout SCRAPELIB_TIMEOUT] <span class="pp">[--</span><span class="ss">no</span><span class="pp">-</span><span class="ss">verify</span><span class="pp">]</span> [--retries SCRAPELIB_RETRIES]</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                   <span class="ex">[--retry_wait</span> SCRAPELIB_RETRY_WAIT_SECONDS]</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                   <span class="ex">module</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">update</span> pupa data</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">positional</span> arguments:</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">module</span>                path to scraper module</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-h,</span> <span class="at">--help</span>            show this help message and exit</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--scrape</span>              only run scrape post-scrape step</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--import</span>              only run import post-scrape step</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--nonstrict</span>           skip validation on save</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--fastmode</span>            use cache and turn off throttling</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--datadir</span> SCRAPED_DATA_DIR</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">data</span> directory</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--cachedir</span> CACHE_DIR  cache directory</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-r</span> SCRAPELIB_RPM, <span class="at">--rpm</span> SCRAPELIB_RPM</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">scraper</span> rpm</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--timeout</span> SCRAPELIB_TIMEOUT</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">scraper</span> timeout</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--no-verify</span>           skip tls verification</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--retries</span> SCRAPELIB_RETRIES</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">scraper</span> retries</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--retry_wait</span> SCRAPELIB_RETRY_WAIT_SECONDS</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">scraper</span> retry wait</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Tip
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Running a scrape with <code>--fastmode</code> will disable request throttling, resulting in a faster scrape. Great for local development, especially for narrow scrapes, e.g.,</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pupa</span> update <span class="at">--fastmode</span> lametro events window=1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-</div>
-<section id="additional-arguments" class="level5">
-<h5 class="anchored" data-anchor-id="additional-arguments">Additional arguments</h5>
+<section id="data-flow" class="level1">
+<h1>Data flow</h1>
+<section id="lametro-scraper" class="level2">
+<h2 class="anchored" data-anchor-id="lametro-scraper">LAMetro scraper</h2>
 <ul>
-<li><code>bills</code>
+<li><strong>Python backend</strong>
 <ul>
-<li><code>window</code> (default: 28) - How far back to scrape, in days. Scrapes all matters, if 0.</li>
-<li><code>matter_ids</code> (default: None) - Comma-separated list of MatterIds from the Legistar API. Scrapes all matters updated within window, if None.</li>
+<li>Based off of <a href="https://github.com/opencivicdata/python-legistar-scraper/"><code>python-legistar-scraper</code></a></li>
+<li>Depends on <a href="https://github.com/opencivicdata/pupa"><code>pupa</code></a> scraper/importer</li>
 </ul></li>
-<li><code>events</code>
-<ul>
-<li><code>window</code> (default: None) - How far back to scrape, in days.</li>
-</ul></li>
+<li>Data is fetched from the <a href="https://webapi.legistar.com/">Legistar API</a></li>
+<li>It is normalized as specified in either <a href="https://github.com/opencivicdata/python-legistar-scraper/"><code>python-legistar-scraper</code></a> or <a href="https://github.com/Metro-Records/scrapers-lametro"><code>scrapers-lametro</code></a></li>
+<li>To be included in database import, API data needs to be part of the construction of a pupa scrape object like <code>Bill</code> or added to a scrape object, using a pupa method like <code>Bill.add_sponsorship()</code>, or <code>Bill.add_action()</code>.</li>
+<li>Pupa import is backed by <code>opencivicdata</code> (OCD) <a href="https://open-civic-data.readthedocs.io/en/latest/data/datatypes.html">models</a></li>
+<li>Imported data then is available in the database for Django apps to access and build their own models on top of, in ways that are convenient for accessing data for presentation.</li>
 </ul>
 </section>
-<section id="examples" class="level5">
-<h5 class="anchored" data-anchor-id="examples">Examples</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scrape board reports from the past week</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pupa</span> update lametro bills window=7</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Scrape specific board reports</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pupa</span> update lametro bills matter_ids=10340,10084</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Scrape events from past 30 days</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pupa</span> update lametro events window=30</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="lametro-councilmatic" class="level2">
+<h2 class="anchored" data-anchor-id="lametro-councilmatic"><a href="https://github.com/Metro-Records/la-metro-councilmatic">LAMetro Councilmatic</a></h2>
+<ul>
+<li><strong>Django frontend</strong>
+<ul>
+<li>Models based off of <a href="https://github.com/datamade/django-councilmatic"><code>django-councilmatic</code></a> models</li>
+<li>Which are themselves based off of <a href="https://github.com/opencivicdata/python-opencivicdata"><code>python-opencivicdata</code></a> models</li>
+<li>Which are again, an implementation of <a href="https://open-civic-data.readthedocs.io/en/latest/data/datatypes.html">OCD</a> models</li>
+</ul></li>
+<li>In addition to Django models, the frontend also creates a Haystack search index object which maps model fields onto search document fields for serialization in <code>search_indexes.py</code></li>
+<li><code>result</code> in search templates refers to these Haystack search index objects</li>
+<li>If you can’t find a property or method on an <code>LAMetro...</code> or <code>LAMetro...Index</code> model, you may need to look deeper in the model dependencies above.</li>
+</ul>
 </section>
-</section>
-<section id="pupa-clean" class="level4">
-<h4 class="anchored" data-anchor-id="pupa-clean">pupa clean</h4>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> pupa clean <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> [--window WINDOW] [--max MAX] <span class="pp">[--</span><span class="ss">report</span><span class="pp">]</span> <span class="pp">[--</span><span class="ss">yes</span><span class="pp">]</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Removes</span> database objects that haven<span class="st">'t been seen in recent scrapes</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="st">options:</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="st">  -h, --help       show this help message and exit</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="st">  --window WINDOW  objects not seen in this many days will be deleted from the database</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="st">  --max MAX        max number of objects to delete without triggering failsafe</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="st">  --report         generate a report of what objects this command would delete without making any changes to the database</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="st">  --yes            assumes an answer of '</span>yes<span class="st">' to all interactive prompts</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<section id="examples-1" class="level5">
-<h5 class="anchored" data-anchor-id="examples-1">Examples</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Log which objects will be deleted without making changes to the database</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pupa</span> clean <span class="at">--report</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove objects that haven't been seen for 30 days</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pupa</span> clean <span class="at">--window</span> 30</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove a maximum of 100 objects</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pupa</span> clean <span class="at">--max</span> 100</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-</section>
-</section>
-</section>
-<section id="writing-tests" class="level2">
-<h2 class="anchored" data-anchor-id="writing-tests">Writing tests</h2>
-<p>tktktk</p>
+<section id="example-bill-sponsors" class="level2">
+<h2 class="anchored" data-anchor-id="example-bill-sponsors">Example: Bill Sponsors</h2>
+<ol type="1">
+<li><p>Fetch API data</p>
+<p>In the case of bill sponsors, given a <code>MatterID</code> for a bill, <code>scrapers-lametro</code> bill scraper (<code>lametro/bills.py</code>) calls a function inherited from <code>python-legistar-scraper</code> to fetch data from the MatterSponsor API endpoint using that matter ID (<code>sponsors(matter_id)</code>).</p></li>
+<li><p>Normalize data</p>
+<p><code>scrapers-lametro</code> uses a LAMetro-specific <code>sponsorships()</code> method to wrap the raw sponsorship data into dicts, with the first sponsorship being flagged as primary, and yielding each in turn</p></li>
+<li><p>Add to Bill object</p>
+<p>The LAMetro scraper then calls the pupa method <code>add_sponsorship(sponsorship**)</code> to unpack each yielded <code>sponsorship</code> dict to guarantee the data structure conforms to the OCD format before it is appended to the <code>Bill</code> object.</p></li>
+<li><p>Import</p>
+<p>LAMetro Scrapers bill importer (<code>la_metro_bill.py</code>) calls the pupa <code>BillImporter</code>, and the bill is written as a row to <code>opencivicdata_bill</code>, and writes each sponsorship as a row in the <code>opencivicdata_billsponsorship</code> table with <code>bill_id</code> referencing that bill.</p></li>
+<li><p>Councilmatic model</p>
+<p><code>django-councilmatic</code> defines its own Bill model based on the OCD model, which adds, among other things, a property <code>primary_sponsor</code>, which filters for the primary sponsor and unwraps the queryset with <code>first()</code>.</p></li>
+<li><p>Search Index</p>
+<p>The Haystack search index <code>LAMetroBillIndex</code> declares and populates a <code>primary_sponsor</code> field with the <code>name</code> of the primary sponsor.</p></li>
+<li><p>Templates</p>
+<p>Now the <code>search/_tags.html</code> template can reference <code>result.primary_sponsor</code> to display the name of the first sponsor listed on the bill.</p></li>
+</ol>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
