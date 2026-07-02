@@ -146,9 +146,3 @@ class Lametro(Jurisdiction):
         org.add_source("https://metro.legistar.com/DepartmentDetail.aspx?ID=52282&GUID=2FFCEDD3-18CA-4895-9998-8F9A2F533E4F&R=5c9ccace-e519-461a-9c62-aa987ea49f67")
         
         yield org
-
-        org = Organization(name="Budget Public Hearing", classification="committee")
-
-        org.add_source("https://metro.legistar.com/DepartmentDetail.aspx?ID=33195&GUID=49C5F4D7-0E2B-4BDA-AEBE-12EDCDA8F0CE")
-        
-        yield org
