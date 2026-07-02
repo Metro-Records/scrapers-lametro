@@ -232,6 +232,6 @@ Here are some problems that have recurred in the past:
 
 ### `cannot resolve pseudo id to Organization:`
 
-An organization is not getting scraped, and because at least one associated bill is getting scraped, it's breaking the full scrape because it can't find the org for that bill. In the past, this has happened because the organization's BodyType is not included in the list of scraped body types. If there are public bills attached to a new body type, we should probably start scraping that body type. 
+An organization is not getting scraped, and because at least one associated bill is getting scraped, it's breaking the full scrape because it can't find the org for that bill. In the past, this has happened because the organization is not being found by the usual methods, for example, the organization's BodyType is not included in the list of scraped body types. See examples below:
  - https://github.com/Metro-Records/scrapers-lametro/pull/48
  - https://github.com/Metro-Records/scrapers-lametro/pull/65
