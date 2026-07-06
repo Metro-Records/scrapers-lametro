@@ -130,8 +130,14 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
             is_committee = body["BodyTypeId"] in body_types_list
             is_test_body = "test" in body["BodyName"].lower()
             is_board_workshop = body["BodyName"] == "Special Board Member Workshop"
+            is_budget_public_hearing = body["BodyName"] == "Budget Public Hearing"
 
-            if is_committee or is_test_body or is_board_workshop:
+            if (
+                is_committee
+                or is_test_body
+                or is_board_workshop
+                or is_budget_public_hearing
+            ):
                 organization_name = body["BodyName"].strip()
 
                 o = Organization(
