@@ -269,7 +269,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                 legislative_session=bill_session,
                 title=title,
                 classification=bill_type,
-                from_organization=body,
+                from_organization={"name": body},
             )
 
             # The Metro scraper scrapes private bills.
