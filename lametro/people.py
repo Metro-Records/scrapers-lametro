@@ -122,88 +122,72 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
             members[member] = p
 
         for body in self.bodies():
-            body_types_list = [
-                body_types["Committee"],
-                body_types["Independent Taxpayer Oversight Committee"],
-            ]
+            organization_name = body["BodyName"].strip()
 
-            is_committee = body["BodyTypeId"] in body_types_list
-            is_test_body = "test" in body["BodyName"].lower()
-            is_board_workshop = body["BodyName"] == "Special Board Member Workshop"
-            is_budget_public_hearing = body["BodyName"] == "Budget Public Hearing"
+            o = Organization(
+                organization_name,
+                classification="committee",
+                parent_id={"name": "Board of Directors"},
+            )
 
-            if (
-                is_committee
-                or is_test_body
-                or is_board_workshop
-                or is_budget_public_hearing
-            ):
-                organization_name = body["BodyName"].strip()
+            organization_info = web_info.get(organization_name, {})
+            organization_url = organization_info.get(
+                "url", self.WEB_URL + "https://metro.legistar.com/Departments.aspx"
+            )
 
-                o = Organization(
-                    organization_name,
-                    classification="committee",
-                    parent_id={"name": "Board of Directors"},
-                )
+            o.add_source(
+                self.BASE_URL + "/bodies/{BodyId}".format(**body), note="api"
+            )
+            o.add_source(organization_url, note="web")
 
-                organization_info = web_info.get(organization_name, {})
-                organization_url = organization_info.get(
-                    "url", self.WEB_URL + "https://metro.legistar.com/Departments.aspx"
-                )
-
-                o.add_source(
-                    self.BASE_URL + "/bodies/{BodyId}".format(**body), note="api"
-                )
-                o.add_source(organization_url, note="web")
-
-                for office in self.body_offices(body):
-                    role = office["OfficeRecordTitle"]
-
-                    if role not in BOARD_OFFICE_ROLES:
-                        if role == "non-voting member":
-                            role = "Nonvoting Member"
-                        else:
-                            role = "Member"
-
-                    person = office["OfficeRecordFullName"]
-
-                    # Temporarily skip committee memberships, e.g., for
-                    # new board members. The content of this array is provided
-                    # by Metro.
-                    if person in PENDING_COMMITTEE_MEMBERS:
-                        self.warning(
-                            "Skipping {0} membership for {1}".format(
-                                organization_name, person
-                            )
-                        )
-                        continue
-
-                    if person in members:
-                        p = members[person]
+            for office in self.body_offices(body):
+                role = office["OfficeRecordTitle"]
+                
+                if role not in BOARD_OFFICE_ROLES:
+                    if role == "non-voting member":
+                        role = "Nonvoting Member"
                     else:
-                        p = Person(person)
+                        role = "Member"
+                        
+                person = office["OfficeRecordFullName"]
 
-                        source_urls = self.person_sources_from_office(office)
-                        person_api_url, person_web_url = source_urls
-                        p.add_source(person_api_url, note="api")
-                        p.add_source(person_web_url, note="web")
-
-                        members[person] = p
-
-                    start_date = self.toDate(office["OfficeRecordStartDate"])
-                    end_date = self.toDate(office["OfficeRecordEndDate"])
-                    membership = p.add_membership(
-                        organization_name,
-                        role=role,
-                        start_date=start_date,
-                        end_date=end_date,
+                # Temporarily skip committee memberships, e.g., for
+                # new board members. The content of this array is provided
+                # by Metro.
+                if person in PENDING_COMMITTEE_MEMBERS:
+                    self.warning(
+                        "Skipping {0} membership for {1}".format(
+                            organization_name, person
+                        )
                     )
+                    continue
 
-                    acting_member_end_date = ACTING_MEMBERS_WITH_END_DATE.get(p.name)
-                    if acting_member_end_date and acting_member_end_date <= end_date:
-                        membership.extras = {"acting": "true"}
+                if person in members:
+                    p = members[person]
+                else:
+                    p = Person(person)
 
-                yield o
+                    source_urls = self.person_sources_from_office(office)
+                    person_api_url, person_web_url = source_urls
+                    p.add_source(person_api_url, note="api")
+                    p.add_source(person_web_url, note="web")
+                    
+                    members[person] = p
+
+                start_date = self.toDate(office["OfficeRecordStartDate"])
+                end_date = self.toDate(office["OfficeRecordEndDate"])
+                membership = p.add_membership(
+                    organization_name,
+                    role=role,
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+
+                acting_member_end_date = ACTING_MEMBERS_WITH_END_DATE.get(p.name)
+                if acting_member_end_date and acting_member_end_date <= end_date:
+                    membership.extras = {"acting": "true"}
+
+            yield o
 
         for p in members.values():
             yield p
