@@ -230,10 +230,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             identifier = matter["MatterFile"]
             body = matter["MatterBodyName"]
             
-            if body in (
-                    "Board of Directors - Regular Board Meeting",
-                    "Board of Directors - Special Board Meeting",
-            ):
+            if "Board of Directors" in body:
                 body = "Board of Directors"
 
             is_board_correspondence = matter["MatterTypeName"] in {
