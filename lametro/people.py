@@ -122,6 +122,17 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
             members[member] = p
 
         for body in self.bodies():
+
+            # see __init__.py
+            manually_added_bodies = [
+                "LA SAFE",
+                "Special Board Budget Workshop",
+                "Crenshaw Project Corporation",
+            ]
+
+            if body["BodyName"] in manually_added_bodies:
+                continue
+
             organization_name = body["BodyName"].strip()
 
             o = Organization(
