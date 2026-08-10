@@ -1,11 +1,11 @@
 from datetime import date
+import os
 import collections
 
 from legistar.people import LegistarAPIPersonScraper, LegistarPersonScraper
 
 from pupa.scrape import Scraper
 from pupa.scrape import Person, Organization
-
 
 ACTING_MEMBERS_WITH_END_DATE = {"Shirley Choate": date(2018, 10, 24)}
 
@@ -19,11 +19,29 @@ BOARD_OFFICE_ROLES = (
 
 PENDING_COMMITTEE_MEMBERS = ()
 
+try:
+    from .secrets import TOKEN
+except ImportError:
+    TOKEN = os.getenv("LEGISTAR_API_TOKEN", "")
+
 
 class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
     BASE_URL = "http://webapi.legistar.com/v1/metro"
     WEB_URL = "https://metro.legistar.com"
     TIMEZONE = "America/Los_Angeles"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if TOKEN:
+            self.params = {"token": TOKEN}
+
+    def bodies(self):
+        bodies_url = self.BASE_URL + "/bodies/"
+
+        pages = self.pages(bodies_url, params=self.params, item_key="BodyId")
+        for body in pages:
+            yield body
 
     def scrape(self):
         """
@@ -38,7 +56,7 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
         member_posts = {}
 
         for member, organizations in web_scraper.councilMembers():
-            member_posts[member['Person Name']['label']] = member['Notes']
+            member_posts[member["Person Name"]["label"]] = member["Notes"]
 
             for organization, _, _ in organizations:
                 organization_name = organization["Department Name"]["label"].strip()
@@ -146,20 +164,18 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
                 "url", self.WEB_URL + "https://metro.legistar.com/Departments.aspx"
             )
 
-            o.add_source(
-                self.BASE_URL + "/bodies/{BodyId}".format(**body), note="api"
-            )
+            o.add_source(self.BASE_URL + "/bodies/{BodyId}".format(**body), note="api")
             o.add_source(organization_url, note="web")
 
             for office in self.body_offices(body):
                 role = office["OfficeRecordTitle"]
-                
+
                 if role not in BOARD_OFFICE_ROLES:
                     if role == "non-voting member":
                         role = "Nonvoting Member"
                     else:
                         role = "Member"
-                        
+
                 person = office["OfficeRecordFullName"]
 
                 # Temporarily skip committee memberships, e.g., for
@@ -182,7 +198,7 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
                     person_api_url, person_web_url = source_urls
                     p.add_source(person_api_url, note="api")
                     p.add_source(person_web_url, note="web")
-                    
+
                     members[person] = p
 
                 start_date = self.toDate(office["OfficeRecordStartDate"])
