@@ -159,6 +159,8 @@ class LametroPersonScraper(LegistarAPIPersonScraper, Scraper):
                 parent_id={"name": "Board of Directors"},
             )
 
+            o.extras = {"bodytype":body["BodyTypeName"]}
+
             organization_info = web_info.get(organization_name, {})
             organization_url = organization_info.get(
                 "url", self.WEB_URL + "https://metro.legistar.com/Departments.aspx"
