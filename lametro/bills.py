@@ -229,6 +229,9 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             title = matter["MatterTitle"]
             identifier = matter["MatterFile"]
             body = matter["MatterBodyName"]
+            
+            if "Board of Directors" in body:
+                body = "Board of Directors"
 
             is_board_correspondence = matter["MatterTypeName"] in {
                 "Board Box",
@@ -269,7 +272,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                 legislative_session=bill_session,
                 title=title,
                 classification=bill_type,
-                from_organization=body,
+                from_organization={"name": body},
             )
 
             # The Metro scraper scrapes private bills.
