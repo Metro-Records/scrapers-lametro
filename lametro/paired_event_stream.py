@@ -3,6 +3,8 @@ import logging
 import re
 from typing import Generator, Optional
 
+from sentry_sdk import capture_exception
+
 from .base import LAMetroAPIWebEventScraper
 
 LOGGER = logging.getLogger(__name__)
@@ -170,10 +172,15 @@ class PairedEventStream:
                     event["EventDate"], "%Y-%m-%dT%H:%M:%S"
                 )
 
-                if event_date > spanish_start_date and event.is_spanish:
-                    raise ValueError(
-                        f"Could not find English partner for Spanish event:\n{event}"
-                    )
+                try:
+                    if event_date > spanish_start_date and event.is_spanish:
+                        raise ValueError(
+                            f"Could not find English partner for Spanish event:\n{event}"
+                        )
+                except ValueError as exc:
+                    capture_exception(exc)
+                    continue
+
             else:
                 yield (event, None)
 
