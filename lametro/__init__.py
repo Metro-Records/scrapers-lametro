@@ -53,6 +53,8 @@ class Lametro(Jurisdiction):
             division_id="ocd-division/country:us/state:ca/place:los_angeles",
         )
 
+        org.extras = { "bodytype": "Primary Legislative Body" }
+
         for district in range(1, 6):
             org.add_post(
                 "Los Angeles County Board Supervisor, District {}".format(district),
@@ -133,16 +135,21 @@ class Lametro(Jurisdiction):
         org.add_source(
             "https://metro.legistar.com/DepartmentDetail.aspx?ID=32216&GUID=D790CC05-ACCB-451C-B576-2952090769F1"
         )
+        org.extras = { "bodytype": "Corporation" }
+        
         yield org
 
         org = Organization(name="LA SAFE", classification="corporation")
         org.add_source(
             "https://metro.legistar.com/DepartmentDetail.aspx?ID=30222&GUID=5F27DA83-633F-4FEA-A4B0-0477551061B6&R=aef57793-1826-4cfa-b6e3-d6b42cf77527"
         )
+        org.extras = { "bodytype": "Corporation" }
+
         yield org
 
         org = Organization(name="Special Board Budget Workshop", classification="committee")
 
         org.add_source("https://metro.legistar.com/DepartmentDetail.aspx?ID=52282&GUID=2FFCEDD3-18CA-4895-9998-8F9A2F533E4F&R=5c9ccace-e519-461a-9c62-aa987ea49f67")
+        org.extras = { "bodytype": "Committee" }
         
         yield org
