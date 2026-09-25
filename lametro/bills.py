@@ -6,7 +6,7 @@ import scrapelib
 from legistar.bills import LegistarAPIBillScraper
 from pupa.scrape import Scraper, VoteEvent
 from pupa.utils import _make_pseudo_id
-from .factories import OrganizationName, build_bill, build_bill_action
+from .factories import OrganizationRef, add_related_entity, build_bill, build_bill_action
 
 from sentry_sdk import capture_exception
 
@@ -140,7 +140,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                 bill_action = build_bill_action(
                     description=action_description,
                     date=action_date,
-                    organization=OrganizationName(responsible_org),
+                    organization=OrganizationRef(responsible_org),
                     classification=ACTION_CLASSIFICATION[action_description],
                 )
                 
@@ -270,7 +270,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                 legislative_session=bill_session,
                 title=title,
                 classification=bill_type,
-                from_organization=OrganizationName("Board of Directors"),
+                from_organization=OrganizationRef("Board of Directors"),
             )
 
             # The Metro scraper scrapes private bills.
@@ -313,11 +313,10 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                 act = bill.add_action(**action)
 
                 if action["description"] == "Referred":
-                    body_name = matter["MatterBodyName"]
-                    act.add_related_entity(
-                        body_name,
-                        "organization",
-                        entity_id=_make_pseudo_id(name=body_name),
+                    org_name = matter["MatterBodyName"]
+                    add_related_entity(
+                        action=act,
+                        organization=OrganizationRef(org_name)
                     )
 
                 result, votes = vote
@@ -340,7 +339,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                             raw_option = vote["VoteValueName"].lower()
                         except AttributeError:
                             raw_option = None
-                        clean_option = self.VOTE_OPTIONS.get(raw_option, raw_option)
+
                         vote_event.vote(clean_option, vote["VotePersonName"].strip())
 
                     yield vote_event
