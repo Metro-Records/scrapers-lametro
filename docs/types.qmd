@@ -1,0 +1,32 @@
+---
+date: 9/25/2026
+date-modified: last-modified
+---
+
+# Improving type safety
+
+## Typed wrapper functions
+
+Instead of directly `pupa` classes and methods to build scraper objects, `scrapers-metro` has type-safe alternative functions which wrap around the native `pupa` functions. 
+
+So far the following have been implemented:
+
+(from `lametro/bills.py`, see )
+
+| For                         | Instead of              | Use                        |
+|-----------------------------|-------------------------|----------------------------|
+| Bill                        | `Bill()`                | `build_bill()`             |
+| Bill Action                 | a plain dict            | `build_bill_action()`      |
+| Action.related_entity (org) | `.add_related_entity()` | `add_related_entity_org()` |
+
+
+## Classes
+
+The following classes help ensure type safety by passing data in the expected way where their use has been implemented.
+
+- `OrganizationRef(name: str)`
+  - Pass references to organizations in the correct format
+  - Implemented in:
+    - `build_bill()`
+    - `build_bill_action()`
+    - `add_related_entity_org()`

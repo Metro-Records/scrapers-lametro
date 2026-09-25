@@ -4,6 +4,11 @@ DataMade's source for municipal scrapers feeding [boardagendas.metro.net](https:
 
 For more on development, debugging, deployment, and more, [consult the documentation](https://metro-records.github.io/scrapers-lametro/)!
 
+
+## Typing
+
+We are gradually implementing typing. See [docs/types.qmd] for more.
+
 ## Updating the documentation
 
 To make changes to the documentation, [install Quarto](https://quarto.org/docs/get-started/).
