@@ -7,12 +7,12 @@ class OrganizationRef:
     name: str
 
     @property
-    def by_name(self):
+    def as_dict(self):
         return {"name" : self.name}
 
     @property
     def by_pseudo_id(self):
-        return _make_pseudo_id(**self.by_name)
+        return _make_pseudo_id(name=self.name)
     
 def checkOrgRef(arg):
     if isinstance(arg, OrganizationRef):
@@ -23,14 +23,14 @@ def checkOrgRef(arg):
 def build_bill(*, from_organization: OrganizationRef, **kwargs):
     if checkOrgRef(from_organization):
         return Bill(
-            from_organization=from_organization.by_name,
+            from_organization=from_organization.as_dict,
             **kwargs
         )
 
 def build_bill_action(*, organization: OrganizationRef, **kwargs):
     if checkOrgRef(organization):
         return {
-            "organization": organization.by_name,
+            "organization": organization.as_dict,
             **kwargs
         }
 
