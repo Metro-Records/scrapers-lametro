@@ -14,25 +14,30 @@ class OrganizationRef:
     def by_pseudo_id(self):
         return _make_pseudo_id(**self.by_name)
     
-        
+def checkOrgRef(arg):
+    if isinstance(arg, OrganizationRef):
+        return True
+    else:
+        raise TypeError(f"Keyword ${arg} expected argument of type OrganizationRef")
+
 def build_bill(*, from_organization: OrganizationRef, **kwargs):
-    return Bill(
-        from_organization=from_organization.by_name,
-        **kwargs
-    )
+    if checkOrgRef(from_organization):
+        return Bill(
+            from_organization=from_organization.by_name,
+            **kwargs
+        )
 
 def build_bill_action(*, organization: OrganizationRef, **kwargs):
-    return {
-        "organization": organization.by_name,
-        **kwargs
-    }
+    if checkOrgRef(organization):
+        return {
+            "organization": organization.by_name,
+            **kwargs
+        }
 
 def add_related_entity_org(*, action, organization: OrganizationRef):
-    action.add_related_entity(
-        organization.name,
-        "organization",
-        entity_id=organization.by_pseudo_id,
-    )
-    return None
-
-
+    if checkOrgRef(organization):
+        action.add_related_entity(
+            organization.name,
+            "organization",
+            entity_id=organization.by_pseudo_id,
+        )
