@@ -27,7 +27,7 @@ def build_bill_action(*, organization: OrganizationRef, **kwargs):
         **kwargs
     }
 
-def add_related_entity(*, action, organization: OrganizationRef):
+def add_related_entity_org(*, action, organization: OrganizationRef):
     action.add_related_entity(
         organization.name,
         "organization",

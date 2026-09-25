@@ -5,8 +5,7 @@ import pytz
 import scrapelib
 from legistar.bills import LegistarAPIBillScraper
 from pupa.scrape import Scraper, VoteEvent
-from pupa.utils import _make_pseudo_id
-from .factories import OrganizationRef, add_related_entity, build_bill, build_bill_action
+from .factories import OrganizationRef, add_related_entity_org, build_bill, build_bill_action
 
 from sentry_sdk import capture_exception
 
@@ -314,7 +313,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
 
                 if action["description"] == "Referred":
                     org_name = matter["MatterBodyName"]
-                    add_related_entity(
+                    add_related_entity_org(
                         action=act,
                         organization=OrganizationRef(org_name)
                     )
