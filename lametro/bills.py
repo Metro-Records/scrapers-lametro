@@ -4,8 +4,9 @@ import os
 import pytz
 import scrapelib
 from legistar.bills import LegistarAPIBillScraper
-from pupa.scrape import Bill, Scraper, VoteEvent
+from pupa.scrape import Scraper, VoteEvent
 from pupa.utils import _make_pseudo_id
+from .factories import OrganizationName, build_bill, build_bill_action
 
 from sentry_sdk import capture_exception
 
@@ -136,12 +137,13 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             if all((action_date, action_description, responsible_org)):
                 action_date = self.toTime(action_date).date()
 
-                bill_action = {
-                    "description": action_description,
-                    "date": action_date,
-                    "organization": {"name": responsible_org},
-                    "classification": ACTION_CLASSIFICATION[action_description],
-                }
+                bill_action = build_bill_action(
+                    description=action_description,
+                    date=action_date,
+                    organization=OrganizationName(responsible_org),
+                    classification=ACTION_CLASSIFICATION[action_description],
+                )
+                
                 if bill_action != old_action:
                     old_action = bill_action
                 else:
@@ -263,12 +265,12 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             else:
                 alternate_identifiers = []
 
-            bill = Bill(
+            bill = build_bill(
                 identifier=identifier,
                 legislative_session=bill_session,
                 title=title,
                 classification=bill_type,
-                from_organization={"name": "Board of Directors"},
+                from_organization=OrganizationName("Board of Directors"),
             )
 
             # The Metro scraper scrapes private bills.
