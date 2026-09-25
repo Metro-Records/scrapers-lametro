@@ -283,7 +283,8 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             # We yield private bills early, wipe data from previously imported once-public
             # bills, and include only data *required* by the pupa schema.
             # https://github.com/opencivicdata/pupa/blob/master/pupa/scrape/schemas/bill.py
-            bill.extras = {"restrict_view": self._is_restricted(matter)}
+            bill.extras = {}
+            bill.extras["restrict_view"] = self._is_restricted(matter)
 
             # Add API source early.
             # Private bills should have this url for debugging.
