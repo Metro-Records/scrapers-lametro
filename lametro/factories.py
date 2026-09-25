@@ -11,7 +11,7 @@ class OrganizationRef:
         return {"name" : self.name}
 
     @property
-    def by_pseudo_id(self):
+    def as_pseudo_id(self):
         return _make_pseudo_id(name=self.name)
     
 def checkOrgRef(arg):
@@ -39,5 +39,5 @@ def add_related_entity_org(*, action, organization: OrganizationRef):
         action.add_related_entity(
             organization.name,
             "organization",
-            entity_id=organization.by_pseudo_id,
+            entity_id=organization.as_pseudo_id,
         )
