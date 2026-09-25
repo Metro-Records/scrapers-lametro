@@ -7,7 +7,7 @@ For more on development, debugging, deployment, and more, [consult the documenta
 
 ## Typing
 
-We are gradually implementing typing. See [docs/types.qmd] for more.
+We are gradually implementing typing. See [[./docs/types.qmd]] and [PR #77](https://github.com/Metro-Records/scrapers-lametro/pull/77) for more.
 
 ## Updating the documentation
 

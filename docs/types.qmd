@@ -5,13 +5,16 @@ date-modified: last-modified
 
 # Improving type safety
 
+
+
 ## Typed wrapper functions
 
 Instead of directly `pupa` classes and methods to build scraper objects, `scrapers-metro` has type-safe alternative functions which wrap around the native `pupa` functions. 
 
 So far the following have been implemented:
 
-(from `lametro/bills.py`, see )
+(all from `lametro/bills.py`, see [PR #77]
+(https://github.com/Metro-Records/scrapers-lametro/pull/77))
 
 | For                         | Instead of              | Use                        |
 |-----------------------------|-------------------------|----------------------------|
