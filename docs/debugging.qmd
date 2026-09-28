@@ -11,6 +11,7 @@ Many issues can arise in the Metro galaxy, from the shallowest part of the front
 
 - [Data is missing](#data-is-missing)
 - [Data is incorrect](#data-is-incorrect)
+- [Recurrent issues](#recurrent-issues)
 - Appendices
     - [More on Airflow](#more-on-airflow)
     - [View an entity in the Councilmatic database](#view-an-entity-in-the-councilmatic-database)
@@ -222,3 +223,15 @@ Press Ctrl-C to quit
 ```
 
 The timestamps at the bottom correspond to the scrape _after_ the error occurred, so you can use them to determine when the broken scrape occurred and whether it's relevant to the missing data.
+
+## Recurrent issues
+
+Make sure to search in issues in both la-metro-councilmatic and scrapers-lametro to find possible related issues. To make this organic method of self-documentation more helpful, put searchable error text in your issues and explanations in your PRs :)
+
+Here are some problems that have recurred in the past:
+
+### `cannot resolve pseudo id to Organization:`
+
+An organization is not getting scraped, and because at least one associated bill is getting scraped, it's breaking the full scrape because it can't find the org for that bill. In the past, this has happened because the organization is not being found by the usual methods, for example, the organization's BodyType is not included in the list of scraped body types. See examples below:
+ - https://github.com/Metro-Records/scrapers-lametro/pull/48
+ - https://github.com/Metro-Records/scrapers-lametro/pull/65
