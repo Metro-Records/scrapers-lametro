@@ -4,8 +4,8 @@ import os
 import pytz
 import scrapelib
 from legistar.bills import LegistarAPIBillScraper
-from pupa.scrape import Bill, Scraper, VoteEvent
-from pupa.utils import _make_pseudo_id
+from pupa.scrape import Scraper, VoteEvent
+from .factories import OrganizationRef, add_related_entity_org, build_bill, build_bill_action
 
 from sentry_sdk import capture_exception
 
@@ -136,12 +136,13 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             if all((action_date, action_description, responsible_org)):
                 action_date = self.toTime(action_date).date()
 
-                bill_action = {
-                    "description": action_description,
-                    "date": action_date,
-                    "organization": {"name": responsible_org},
-                    "classification": ACTION_CLASSIFICATION[action_description],
-                }
+                bill_action = build_bill_action(
+                    description=action_description,
+                    date=action_date,
+                    organization=OrganizationRef(responsible_org),
+                    classification=ACTION_CLASSIFICATION[action_description],
+                )
+                
                 if bill_action != old_action:
                     old_action = bill_action
                 else:
@@ -263,12 +264,12 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             else:
                 alternate_identifiers = []
 
-            bill = Bill(
+            bill = build_bill(
                 identifier=identifier,
                 legislative_session=bill_session,
                 title=title,
                 classification=bill_type,
-                from_organization={"name": "Board of Directors"},
+                from_organization=OrganizationRef("Board of Directors"),
             )
 
             # The Metro scraper scrapes private bills.
@@ -311,11 +312,10 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                 act = bill.add_action(**action)
 
                 if action["description"] == "Referred":
-                    body_name = matter["MatterBodyName"]
-                    act.add_related_entity(
-                        body_name,
-                        "organization",
-                        entity_id=_make_pseudo_id(name=body_name),
+                    org_name = matter["MatterBodyName"]
+                    add_related_entity_org(
+                        action=act,
+                        organization=OrganizationRef(org_name)
                     )
 
                 result, votes = vote
@@ -338,7 +338,7 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
                             raw_option = vote["VoteValueName"].lower()
                         except AttributeError:
                             raw_option = None
-                        clean_option = self.VOTE_OPTIONS.get(raw_option, raw_option)
+
                         vote_event.vote(clean_option, vote["VotePersonName"].strip())
 
                     yield vote_event
