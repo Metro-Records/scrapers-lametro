@@ -5,6 +5,8 @@ import pytz
 import scrapelib
 from legistar.bills import LegistarAPIBillScraper
 from pupa.scrape import Scraper, VoteEvent
+
+from .api_types import Matter
 from .factories import OrganizationRef, add_related_entity_org, build_bill, build_bill_action
 
 from sentry_sdk import capture_exception
@@ -220,6 +222,8 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             matters = self.matters()
 
         n_days_ago = datetime.datetime.utcnow() - datetime.timedelta(float(window))
+
+        matter: Matter
         for matter in matters:
             # Skip problematic board reports
             if matter["MatterFile"] in ("2017-0447", "TMP22-0135"):
@@ -279,7 +283,8 @@ class LametroBillScraper(LegistarAPIBillScraper, Scraper):
             # We yield private bills early, wipe data from previously imported once-public
             # bills, and include only data *required* by the pupa schema.
             # https://github.com/opencivicdata/pupa/blob/master/pupa/scrape/schemas/bill.py
-            bill.extras = {"restrict_view": self._is_restricted(matter)}
+            bill.extras = {}
+            bill.extras["restrict_view"] = self._is_restricted(matter)
 
             # Add API source early.
             # Private bills should have this url for debugging.
