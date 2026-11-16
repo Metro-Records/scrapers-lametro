@@ -403,20 +403,22 @@ class LametroEventScraper(LAMetroAPIWebEventScraper, Scraper):
                                 "warning",
                             )
                             continue
-                        cover_page = pdf.pages[0]
 
-                        cover_page_text = cover_page.extract_text()
-                        if not cover_page_text:
-                            # No extractable text found.
-                            # Turn the page into an image and use OCR to get text.
-                            cover_page_image = cover_page.to_image(resolution=300)
+                        with pdf:
+                            cover_page = pdf.pages[0]
 
-                            with io.BytesIO() as in_mem_image:
-                                cover_page_image.save(in_mem_image)
-                                in_mem_image.seek(0)
-                                cover_page_text = pytesseract.image_to_string(
-                                    Image.open(in_mem_image)
-                                )
+                            cover_page_text = cover_page.extract_text()
+                            if not cover_page_text:
+                                # No extractable text found.
+                                # Turn the page into an image and use OCR to get text.
+                                cover_page_image = cover_page.to_image(resolution=150)
+
+                                with io.BytesIO() as in_mem_image:
+                                    cover_page_image.save(in_mem_image)
+                                    in_mem_image.seek(0)
+                                    cover_page_text = pytesseract.image_to_string(
+                                        Image.open(in_mem_image)
+                                    )
 
                         def edit_distance_lte_n(target, corpus, n):
                             for line in corpus.splitlines():
